@@ -1,4 +1,3 @@
-// src/pages/CekPage.jsx
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -8,11 +7,10 @@ export default function CekPage() {
   );
   const [borrowData, setBorrowData] = useState([]);
 
-  // 🧠 Fungsi ambil data peminjaman dari Supabase
   const fetchBorrowData = async (date) => {
     const { data, error } = await supabase
       .from("borrow_request")
-      .select(`*, users(name, class)`) // join biar dapet nama & kelas
+      .select(`*, users(name, class)`)
       .eq("borrow_date", date);
 
     if (error) {
@@ -21,15 +19,12 @@ export default function CekPage() {
       setBorrowData(data);
     }
   };
-
-  // ⏰ Panggil setiap selectedDate berubah
   useEffect(() => {
     fetchBorrowData(selectedDate);
   }, [selectedDate]);
 
   return (
-    <div className="min-h-screen bg-white px-6 py-4">
-      {/* 🗓️ Input Tanggal */}
+    <div className="min-h-screen bg-white py-4">
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
           <label htmlFor="tanggal" className="font-medium whitespace-nowrap">
@@ -45,7 +40,6 @@ export default function CekPage() {
         </div>
       </div>
 
-      {/* 📋 Table hasil peminjaman */}
       <div className="max-w-3xl mx-auto">
         {borrowData.length === 0 ? (
           <p className="text-center text-gray-500">
@@ -56,21 +50,19 @@ export default function CekPage() {
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2">Nama</th>
-                <th className="border p-2">Kelas</th>
                 <th className="border p-2">Mulai</th>
                 <th className="border p-2">Selesai</th>
-                <th className="border p-2">Alasan</th>
+                <th className="border p-2">Nama</th>
+                <th className="border p-2">Kelas</th>
               </tr>
             </thead>
             <tbody>
               {borrowData.map((row) => (
                 <tr key={row.id}>
-                  <td className="border p-2">{row.users?.name}</td>
-                  <td className="border p-2">{row.users?.class}</td>
                   <td className="border p-2">{row.start_time}</td>
                   <td className="border p-2">{row.end_time}</td>
-                  <td className="border p-2">{row.reason}</td>
+                  <td className="border p-2">{row.users?.name}</td>
+                  <td className="border p-2">{row.users?.class}</td>
                 </tr>
               ))}
             </tbody>
