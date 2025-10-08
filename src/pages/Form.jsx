@@ -42,7 +42,7 @@ export default function FormPage() {
       u.name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredUsers(filtered);
-    if (filtered.length === 1) {
+    if (filtered.length === 1 && value.toLowerCase() === filtered[0].name.toLowerCase()) {
       setSelectedName(filtered[0].name);
       setSelectedClass(filtered[0].class);
       setFilteredUsers([]);
