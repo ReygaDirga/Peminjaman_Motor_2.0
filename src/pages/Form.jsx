@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import ModalBerhasil from "../components/ModalBerhasil";
+import ModalBentrok from "../components/ModalBentrok";
 
 export default function FormPage() {
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]); 
+  const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const [selectedName, setSelectedName] = useState("");  
-  const [selectedClass, setSelectedClass] = useState(""); 
+  const [selectedName, setSelectedName] = useState("");
+  const [selectedClass, setSelectedClass] = useState("");
 
+  const [showModal, setShowModal] = useState(false);       // Modal Berhasil
+  const [showBentrok, setShowBentrok] = useState(false);   // Modal Bentrok
+  const [conflictInfo, setConflictInfo] = useState("");    // Info bentrokan
+
+  // Ambil data users buat autocomplete
   useEffect(() => {
     const agreed = localStorage.getItem("agreedToRules");
     if (agreed !== "true") navigate("/peraturan");
@@ -29,6 +36,7 @@ export default function FormPage() {
     fetchUsers();
   }, [navigate]);
 
+  // Handle autocomplete nama
   const handleNameChange = (e) => {
     const value = e.target.value;
     setSelectedName(value);
@@ -38,11 +46,16 @@ export default function FormPage() {
       setSelectedClass("");
       return;
     }
+
     const filtered = users.filter((u) =>
       u.name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredUsers(filtered);
-    if (filtered.length === 1 && value.toLowerCase() === filtered[0].name.toLowerCase()) {
+
+    if (
+      filtered.length === 1 &&
+      value.toLowerCase() === filtered[0].name.toLowerCase()
+    ) {
       setSelectedName(filtered[0].name);
       setSelectedClass(filtered[0].class);
       setFilteredUsers([]);
@@ -55,18 +68,101 @@ export default function FormPage() {
     setFilteredUsers([]);
   };
 
+  // 📝 Submit form → cek bentrok → insert → modal
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("🚀 Data yang mau dikirim:", {
-      nama: selectedName,
-      kelas: selectedClass,
-      tanggal: e.target.hari.value,
-      jamMulai: e.target.jamMulai.value,
-      jamSelesai: e.target.jamSelesai.value,
-      alasan: e.target.alasan.value,
-      stnk: e.target.stnk.value,
-    });
 
+    const tanggal = e.target.hari.value;
+    const jamMulai = e.target.jamMulai.value;
+    const jamSelesai = e.target.jamSelesai.value;
+    const alasan = e.target.alasan.value;
+    const stnk = e.target.stnk.value;
+
+    if (!selectedName || !tanggal || !jamMulai || !jamSelesai || !alasan) {
+      alert("⚠️ Tolong isi semua field sebelum submit ya bang 🙏");
+      return;
+    }
+
+    try {
+      // 1️⃣ Ambil semua jadwal di tanggal yang sama
+      const { data: existingBookings, error: fetchError } = await supabase
+        .from("borrow_request")
+        .select("start_time, end_time, users_id")
+        .eq("borrow_date", tanggal);
+
+      if (fetchError) {
+        console.error("❌ Gagal ambil data jadwal:", fetchError);
+        return;
+      }
+
+      // 2️⃣ Cek bentrok
+      const newStart = jamMulai;
+      const newEnd = jamSelesai;
+
+      for (const booking of existingBookings) {
+        const existingStart = booking.start_time;
+        const existingEnd = booking.end_time;
+
+        // Cek overlap
+        const isOverlap = newStart < existingEnd && newEnd > existingStart;
+        if (isOverlap) {
+          // Ambil nama user yang bentrok
+          const { data: userData } = await supabase
+            .from("users")
+            .select("name")
+            .eq("id", booking.users_id)
+            .single();
+
+          const conflictName = userData ? userData.name : "User lain";
+          setConflictInfo(
+            `Bentrok dengan ${conflictName} (${existingStart} - ${existingEnd})`
+          );
+          setShowBentrok(true);
+          return; // ❌ stop, jangan insert
+        }
+      }
+
+      // 3️⃣ Ambil user_id dari tabel users
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("name", selectedName)
+        .single();
+
+      if (userError || !userData) {
+        console.error("❌ Gagal cari user_id:", userError);
+        alert("Nama peminjam tidak ditemukan 😤");
+        return;
+      }
+
+      const userId = userData.id;
+
+      // 4️⃣ Insert ke tabel borrow_requests
+      const { data, error } = await supabase.from("borrow_requests").insert([
+        {
+          users_id: userId,
+          borrow_date: tanggal,
+          start_time: jamMulai,
+          end_time: jamSelesai,
+          reason: alasan,
+          need_stnk: stnk === "ya",
+        },
+      ]);
+
+      if (error) {
+        console.error("❌ Error insert data:", error);
+        alert("Gagal menyimpan data 🫠");
+      } else {
+        console.log("✅ Data berhasil disimpan:", data);
+        setShowModal(true);
+        e.target.reset();
+        setSelectedName("");
+        setSelectedClass("");
+      }
+    } catch (err) {
+      console.error("❌ Unexpected error:", err);
+      alert("Terjadi kesalahan tidak terduga 😵");
+    }
   };
 
   return (
@@ -85,6 +181,7 @@ export default function FormPage() {
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+              {/* Nama Peminjam */}
               <div className="sm:col-span-3 relative">
                 <label
                   htmlFor="nama"
@@ -120,6 +217,7 @@ export default function FormPage() {
                 )}
               </div>
 
+              {/* Kelas */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="kelas"
@@ -139,6 +237,7 @@ export default function FormPage() {
                 </div>
               </div>
 
+              {/* Hari */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="hari"
@@ -156,6 +255,7 @@ export default function FormPage() {
                 </div>
               </div>
 
+              {/* Jam Mulai */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="jamMulai"
@@ -173,6 +273,7 @@ export default function FormPage() {
                 </div>
               </div>
 
+              {/* Jam Selesai */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="jamSelesai"
@@ -190,6 +291,7 @@ export default function FormPage() {
                 </div>
               </div>
 
+              {/* Alasan */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="alasan"
@@ -208,6 +310,7 @@ export default function FormPage() {
                 </div>
               </div>
 
+              {/* STNK */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="stnk"
@@ -231,6 +334,7 @@ export default function FormPage() {
           </div>
         </div>
 
+        {/* Tombol */}
         <div className="mt-6 flex items-center justify-end gap-x-4">
           <button
             type="button"
@@ -247,6 +351,16 @@ export default function FormPage() {
           </button>
         </div>
       </form>
+
+      {/* Modal Berhasil */}
+      <ModalBerhasil isOpen={showModal} onClose={() => setShowModal(false)} />
+
+      {/* Modal Bentrok */}
+      <ModalBentrok
+        isOpen={showBentrok}
+        onClose={() => setShowBentrok(false)}
+        conflictInfo={conflictInfo}
+      />
     </div>
   );
 }

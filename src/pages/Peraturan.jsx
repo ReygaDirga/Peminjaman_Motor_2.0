@@ -40,9 +40,10 @@ export default function PeraturanPage() {
           </li>
           <li>
             Penggunaan/Peminjaman motor lebih dari batas waktu yang telah ditentukan maka{" "}
-            <b>tidak akan diizinkan</b>.
+            <b>TIDAK DIIZINKAN</b>.
           </li>
           <li>Semua uang sewa akan masuk ke kas kelas.</li>
+          <li>Setelah peminjaman selesai, kunci motor harap diletakkan di laci motor, <b>JANGAN DIBAWA</b> kecuali ada permintaan dari pemilik motor</li>
         </ol>
 
         <div className="flex justify-center gap-4">
@@ -54,7 +55,7 @@ export default function PeraturanPage() {
           </button>
           <button
             onClick={handleAgree}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition"
+            className="px-4 py-2 bg-[#6077ba] text-white rounded hover:bg-indigo-500 transition"
           >
             Saya Setuju
           </button>
