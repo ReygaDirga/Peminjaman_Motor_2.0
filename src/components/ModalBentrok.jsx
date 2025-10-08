@@ -48,7 +48,7 @@ export default function ModalBentrok({ isOpen, onClose, conflictInfo }) {
                 type="button"
                 onClick={() => {
                   onClose();
-                  window.location.href = '/'; // contoh: langsung ke halaman cek jadwal
+                  window.location.href = '/';
                 }}
                 className="inline-flex w-full justify-center rounded-md bg-gray-300 px-3 py-2 text-sm font-semibold text-gray-800 shadow-xs sm:ml-3 sm:w-auto"
               >

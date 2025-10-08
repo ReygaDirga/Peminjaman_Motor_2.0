@@ -12,11 +12,10 @@ export default function FormPage() {
   const [selectedName, setSelectedName] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
 
-  const [showModal, setShowModal] = useState(false);       // Modal Berhasil
-  const [showBentrok, setShowBentrok] = useState(false);   // Modal Bentrok
-  const [conflictInfo, setConflictInfo] = useState("");    // Info bentrokan
+  const [showModal, setShowModal] = useState(false); 
+  const [showBentrok, setShowBentrok] = useState(false); 
+  const [conflictInfo, setConflictInfo] = useState("");  
 
-  // Ambil data users buat autocomplete
   useEffect(() => {
     const agreed = localStorage.getItem("agreedToRules");
     if (agreed !== "true") navigate("/peraturan");
@@ -36,7 +35,6 @@ export default function FormPage() {
     fetchUsers();
   }, [navigate]);
 
-  // Handle autocomplete nama
   const handleNameChange = (e) => {
     const value = e.target.value;
     setSelectedName(value);
@@ -68,7 +66,6 @@ export default function FormPage() {
     setFilteredUsers([]);
   };
 
-  // 📝 Submit form → cek bentrok → insert → modal
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -84,7 +81,6 @@ export default function FormPage() {
     }
 
     try {
-      // 1️⃣ Ambil semua jadwal di tanggal yang sama
       const { data: existingBookings, error: fetchError } = await supabase
         .from("borrow_request")
         .select("start_time, end_time, users_id")
@@ -95,7 +91,6 @@ export default function FormPage() {
         return;
       }
 
-      // 2️⃣ Cek bentrok
       const newStart = jamMulai;
       const newEnd = jamSelesai;
 
@@ -103,10 +98,8 @@ export default function FormPage() {
         const existingStart = booking.start_time;
         const existingEnd = booking.end_time;
 
-        // Cek overlap
         const isOverlap = newStart < existingEnd && newEnd > existingStart;
         if (isOverlap) {
-          // Ambil nama user yang bentrok
           const { data: userData } = await supabase
             .from("users")
             .select("name")
@@ -118,11 +111,9 @@ export default function FormPage() {
             `Bentrok dengan ${conflictName} (${existingStart} - ${existingEnd})`
           );
           setShowBentrok(true);
-          return; // ❌ stop, jangan insert
+          return;
         }
       }
-
-      // 3️⃣ Ambil user_id dari tabel users
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("id")
@@ -136,8 +127,6 @@ export default function FormPage() {
       }
 
       const userId = userData.id;
-
-      // 4️⃣ Insert ke tabel borrow_requests
       const { data, error } = await supabase.from("borrow_requests").insert([
         {
           users_id: userId,
@@ -150,18 +139,18 @@ export default function FormPage() {
       ]);
 
       if (error) {
-        console.error("❌ Error insert data:", error);
-        alert("Gagal menyimpan data 🫠");
+        console.error("Error insert data:", error);
+        alert("Gagal menyimpan data");
       } else {
-        console.log("✅ Data berhasil disimpan:", data);
+        console.log("Data berhasil disimpan:", data);
         setShowModal(true);
         e.target.reset();
         setSelectedName("");
         setSelectedClass("");
       }
     } catch (err) {
-      console.error("❌ Unexpected error:", err);
-      alert("Terjadi kesalahan tidak terduga 😵");
+      console.error("Unexpected error:", err);
+      alert("Terjadi kesalahan tidak terduga");
     }
   };
 
@@ -181,7 +170,6 @@ export default function FormPage() {
             </p>
 
             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              {/* Nama Peminjam */}
               <div className="sm:col-span-3 relative">
                 <label
                   htmlFor="nama"
@@ -217,7 +205,6 @@ export default function FormPage() {
                 )}
               </div>
 
-              {/* Kelas */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="kelas"
@@ -237,7 +224,6 @@ export default function FormPage() {
                 </div>
               </div>
 
-              {/* Hari */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="hari"
@@ -255,7 +241,6 @@ export default function FormPage() {
                 </div>
               </div>
 
-              {/* Jam Mulai */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="jamMulai"
@@ -273,7 +258,6 @@ export default function FormPage() {
                 </div>
               </div>
 
-              {/* Jam Selesai */}
               <div className="sm:col-span-3">
                 <label
                   htmlFor="jamSelesai"
@@ -291,7 +275,6 @@ export default function FormPage() {
                 </div>
               </div>
 
-              {/* Alasan */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="alasan"
@@ -310,7 +293,6 @@ export default function FormPage() {
                 </div>
               </div>
 
-              {/* STNK */}
               <div className="sm:col-span-6">
                 <label
                   htmlFor="stnk"
@@ -334,7 +316,6 @@ export default function FormPage() {
           </div>
         </div>
 
-        {/* Tombol */}
         <div className="mt-6 flex items-center justify-end gap-x-4">
           <button
             type="button"
@@ -352,10 +333,7 @@ export default function FormPage() {
         </div>
       </form>
 
-      {/* Modal Berhasil */}
       <ModalBerhasil isOpen={showModal} onClose={() => setShowModal(false)} />
-
-      {/* Modal Bentrok */}
       <ModalBentrok
         isOpen={showBentrok}
         onClose={() => setShowBentrok(false)}
