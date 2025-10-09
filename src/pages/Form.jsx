@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import ModalBerhasil from "../components/ModalBerhasil";
 import ModalBentrok from "../components/ModalBentrok";
+import { sendTelegramMessage } from "../lib/telegram";
 
 export default function FormPage() {
   const navigate = useNavigate();
@@ -192,6 +193,18 @@ export default function FormPage() {
         newErrors.global = "Gagal menyimpan data, coba lagi.";
         setErrors(newErrors);
       } else {
+        const message = `
+        *Peminjaman Motor Baru!*
+        *==================*
+        *Nama:* ${selectedName}
+        *Kelas:* ${selectedClass}
+        *Tanggal:* ${tanggal}
+        *Waktu:* ${jamMulai} - ${jamSelesai}
+        *Alasan:* ${alasan}
+        *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
+        `;
+        await sendTelegramMessage(message);
+
         setShowModal(true);
         setErrors({});
         e.target.reset();
