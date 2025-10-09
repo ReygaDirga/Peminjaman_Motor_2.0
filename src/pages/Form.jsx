@@ -74,20 +74,17 @@ export default function FormPage() {
     const alasan = e.target.alasan.value;
     const stnk = e.target.stnk.value;
 
-    // Validasi dasar
     if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
     if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
     if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
     if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
     if (!alasan) newErrors.alasan = "Alasan peminjaman harus diisi";
 
-    // Stop awal kalau ada field kosong
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    // Jam & tanggal validation
     if (jamSelesai <= jamMulai)
       newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
 
@@ -113,7 +110,6 @@ export default function FormPage() {
     }
 
     try {
-      // Ambil ID user
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("id")
@@ -127,8 +123,6 @@ export default function FormPage() {
       }
 
       const userId = userData.id;
-
-      // Validasi total jam user per hari
       const { data: existingByUser } = await supabase
         .from("borrow_request")
         .select("start_time, end_time")
@@ -156,8 +150,6 @@ export default function FormPage() {
         setErrors(newErrors);
         return;
       }
-
-      // Cek bentrok
       const { data: existingBookings } = await supabase
         .from("borrow_request")
         .select("start_time, end_time, users_id")
@@ -177,7 +169,7 @@ export default function FormPage() {
           const conflictName = bentrokUser ? bentrokUser.name : "User lain";
 
           if (booking.users_id === userId) {
-            newErrors.jamMulai = `Jadwal kamu bentrok dengan diri sendiri (${booking.start_time} - ${booking.end_time})`;
+            newErrors.jamMulai = `Zims liat, jadwal kamu bentrok dengan diri sendiri (${booking.start_time} - ${booking.end_time})`;
           } else {
             newErrors.jamMulai = `Bentrok dengan ${conflictName} (${booking.start_time} - ${booking.end_time})`;
           }
@@ -185,8 +177,6 @@ export default function FormPage() {
           return;
         }
       }
-
-      // Simpan data
       const { error } = await supabase.from("borrow_request").insert([
         {
           users_id: userId,
@@ -226,8 +216,6 @@ export default function FormPage() {
         <p className="mt-1 text-sm text-gray-600">
           Silakan isi data peminjaman dengan benar ya
         </p>
-
-        {/* NAMA */}
         <div className="mt-6 relative">
           <label className="block text-sm font-medium text-gray-900">
             Nama Peminjam
@@ -261,8 +249,6 @@ export default function FormPage() {
             </ul>
           )}
         </div>
-
-        {/* KELAS */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Kelas
@@ -276,8 +262,6 @@ export default function FormPage() {
             className="mt-2 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:text-sm"
           />
         </div>
-
-        {/* HARI */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Hari Peminjaman
@@ -294,8 +278,6 @@ export default function FormPage() {
             <p className="text-red-500 text-sm mt-1">{errors.hari}</p>
           )}
         </div>
-
-        {/* JAM MULAI */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Jam Peminjaman
@@ -312,8 +294,6 @@ export default function FormPage() {
             <p className="text-red-500 text-sm mt-1">{errors.jamMulai}</p>
           )}
         </div>
-
-        {/* JAM SELESAI */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Selesai Peminjaman
@@ -330,8 +310,6 @@ export default function FormPage() {
             <p className="text-red-500 text-sm mt-1">{errors.jamSelesai}</p>
           )}
         </div>
-
-        {/* ALASAN */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Alasan Penggunaan
@@ -340,7 +318,7 @@ export default function FormPage() {
             id="alasan"
             name="alasan"
             rows="3"
-            placeholder="Tulis alasan kenapa pinjam motor..."
+            placeholder="Tulis alasan kenapa minjam motor..."
             className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
               errors.alasan ? "border-red-500" : "border-gray-300"
             }`}
@@ -349,8 +327,6 @@ export default function FormPage() {
             <p className="text-red-500 text-sm mt-1">{errors.alasan}</p>
           )}
         </div>
-
-        {/* STNK */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
             Butuh STNK
@@ -365,8 +341,6 @@ export default function FormPage() {
             <option value="tidak">Tidak</option>
           </select>
         </div>
-
-        {/* ERROR GLOBAL */}
         {errors.global && (
           <p className="text-red-600 text-sm mt-4">{errors.global}</p>
         )}
