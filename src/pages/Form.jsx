@@ -11,10 +11,11 @@ export default function FormPage() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedName, setSelectedName] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [errors, setErrors] = useState({});
 
-  const [showModal, setShowModal] = useState(false); 
-  const [showBentrok, setShowBentrok] = useState(false); 
-  const [conflictInfo, setConflictInfo] = useState("");  
+  const [showModal, setShowModal] = useState(false);
+  const [showBentrok, setShowBentrok] = useState(false);
+  const [conflictInfo, setConflictInfo] = useState("");
 
   useEffect(() => {
     const agreed = localStorage.getItem("agreedToRules");
@@ -25,11 +26,8 @@ export default function FormPage() {
         .from("users")
         .select("id, name, class");
 
-      if (error) {
-        console.error("❌ Error fetch users:", error);
-      } else {
-        setUsers(data);
-      }
+      if (error) console.error("❌ Error fetch users:", error);
+      else setUsers(data);
     };
 
     fetchUsers();
@@ -68,6 +66,7 @@ export default function FormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const newErrors = {};
 
     const tanggal = e.target.hari.value;
     const jamMulai = e.target.jamMulai.value;
@@ -75,45 +74,46 @@ export default function FormPage() {
     const alasan = e.target.alasan.value;
     const stnk = e.target.stnk.value;
 
-    if (!selectedName || !tanggal || !jamMulai || !jamSelesai || !alasan) {
-      alert("⚠️ Tolong isi semua field sebelum submit ya bang 🙏");
+    // Validasi dasar
+    if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
+    if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
+    if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
+    if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
+    if (!alasan) newErrors.alasan = "Alasan peminjaman harus diisi";
+
+    // Stop awal kalau ada field kosong
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    // Jam & tanggal validation
+    if (jamSelesai <= jamMulai)
+      newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(tanggal);
+    if (selectedDate < today)
+      newErrors.hari = "Tanggal tidak boleh di masa lalu";
+
+    const start = new Date(`1970-01-01T${jamMulai}`);
+    const end = new Date(`1970-01-01T${jamSelesai}`);
+    const durationHours = (end - start) / (1000 * 60 * 60);
+
+    if (durationHours <= 0)
+      newErrors.jamSelesai = "Durasi jamnya tidak valid";
+    const maxHours = selectedClass.toLowerCase() === "ppti 21" ? 4 : 3;
+    if (durationHours > maxHours)
+      newErrors.jamSelesai = `Kelas ${selectedClass} hanya boleh pinjam ${maxHours} jam`;
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
     try {
-      const { data: existingBookings, error: fetchError } = await supabase
-        .from("borrow_request")
-        .select("start_time, end_time, users_id")
-        .eq("borrow_date", tanggal);
-
-      if (fetchError) {
-        console.error("❌ Gagal ambil data jadwal:", fetchError);
-        return;
-      }
-
-      const newStart = jamMulai;
-      const newEnd = jamSelesai;
-
-      for (const booking of existingBookings) {
-        const existingStart = booking.start_time;
-        const existingEnd = booking.end_time;
-
-        const isOverlap = newStart < existingEnd && newEnd > existingStart;
-        if (isOverlap) {
-          const { data: userData } = await supabase
-            .from("users")
-            .select("name")
-            .eq("id", booking.users_id)
-            .single();
-
-          const conflictName = userData ? userData.name : "User lain";
-          setConflictInfo(
-            `Bentrok dengan ${conflictName} (${existingStart} - ${existingEnd})`
-          );
-          setShowBentrok(true);
-          return;
-        }
-      }
+      // Ambil ID user
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("id")
@@ -121,13 +121,73 @@ export default function FormPage() {
         .single();
 
       if (userError || !userData) {
-        console.error("❌ Gagal cari user_id:", userError);
-        alert("Nama peminjam tidak ditemukan 😤");
+        newErrors.nama = "Nama peminjam tidak ditemukan";
+        setErrors(newErrors);
         return;
       }
 
       const userId = userData.id;
-      const { data, error } = await supabase.from("borrow_requests").insert([
+
+      // Validasi total jam user per hari
+      const { data: existingByUser } = await supabase
+        .from("borrow_request")
+        .select("start_time, end_time")
+        .eq("borrow_date", tanggal)
+        .eq("users_id", userId);
+
+      let totalHours = 0;
+      existingByUser?.forEach((b) => {
+        const s = new Date(`1970-01-01T${b.start_time}`);
+        const e = new Date(`1970-01-01T${b.end_time}`);
+        totalHours += (e - s) / (1000 * 60 * 60);
+      });
+
+      const formatHours = (hours) => {
+        const jam = Math.floor(hours);
+        const menit = Math.round((hours - jam) * 60);
+        if (jam === 0) return `${menit} menit`;
+        if (menit === 0) return `${jam} jam`;
+        return `${jam} jam ${menit} menit`;
+      };
+
+      if (totalHours + durationHours > 4) {
+        const over = totalHours + durationHours - 4;
+        newErrors.jamSelesai = `Total jam peminjaman ${formatHours(totalHours + durationHours)}, kelebihan ${formatHours(over)} dari batas 4 jam`;
+        setErrors(newErrors);
+        return;
+      }
+
+      // Cek bentrok
+      const { data: existingBookings } = await supabase
+        .from("borrow_request")
+        .select("start_time, end_time, users_id")
+        .eq("borrow_date", tanggal);
+
+      for (const booking of existingBookings) {
+        const isOverlap =
+          jamMulai < booking.end_time && jamSelesai > booking.start_time;
+
+        if (isOverlap) {
+          const { data: bentrokUser } = await supabase
+            .from("users")
+            .select("name")
+            .eq("id", booking.users_id)
+            .single();
+
+          const conflictName = bentrokUser ? bentrokUser.name : "User lain";
+
+          if (booking.users_id === userId) {
+            newErrors.jamMulai = `Jadwal kamu bentrok dengan diri sendiri (${booking.start_time} - ${booking.end_time})`;
+          } else {
+            newErrors.jamMulai = `Bentrok dengan ${conflictName} (${booking.start_time} - ${booking.end_time})`;
+          }
+          setErrors(newErrors);
+          return;
+        }
+      }
+
+      // Simpan data
+      const { error } = await supabase.from("borrow_request").insert([
         {
           users_id: userId,
           borrow_date: tanggal,
@@ -139,18 +199,18 @@ export default function FormPage() {
       ]);
 
       if (error) {
-        console.error("Error insert data:", error);
-        alert("Gagal menyimpan data");
+        newErrors.global = "Gagal menyimpan data, coba lagi.";
+        setErrors(newErrors);
       } else {
-        console.log("Data berhasil disimpan:", data);
         setShowModal(true);
+        setErrors({});
         e.target.reset();
         setSelectedName("");
         setSelectedClass("");
       }
     } catch (err) {
-      console.error("Unexpected error:", err);
-      alert("Terjadi kesalahan tidak terduga");
+      newErrors.global = "Terjadi kesalahan tidak terduga.";
+      setErrors(newErrors);
     }
   };
 
@@ -160,163 +220,158 @@ export default function FormPage() {
         className="w-full max-w-5xl bg-white p-8 rounded-lg shadow-md"
         onSubmit={handleSubmit}
       >
-        <div className="space-y-12">
-          <div className="border-b border-gray-900/10 pb-12">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Formulir Peminjaman Motor PPTI 21
-            </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Silakan isi data peminjaman dengan benar ya
-            </p>
+        <h2 className="text-lg font-semibold text-gray-900">
+          Formulir Peminjaman Motor PPTI 21
+        </h2>
+        <p className="mt-1 text-sm text-gray-600">
+          Silakan isi data peminjaman dengan benar ya
+        </p>
 
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-3 relative">
-                <label
-                  htmlFor="nama"
-                  className="block text-sm font-medium text-gray-900"
+        {/* NAMA */}
+        <div className="mt-6 relative">
+          <label className="block text-sm font-medium text-gray-900">
+            Nama Peminjam
+          </label>
+          <input
+            id="nama"
+            name="nama"
+            type="text"
+            value={selectedName}
+            onChange={handleNameChange}
+            autoComplete="off"
+            placeholder="Ketik nama..."
+            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
+              errors.nama ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          {errors.nama && (
+            <p className="text-red-500 text-sm mt-1">{errors.nama}</p>
+          )}
+          {filteredUsers.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+              {filteredUsers.map((user) => (
+                <li
+                  key={user.id}
+                  onClick={() => handleSuggestionClick(user)}
+                  className="px-3 py-2 cursor-pointer hover:bg-indigo-100"
                 >
-                  Nama Peminjam
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="nama"
-                    name="nama"
-                    type="text"
-                    value={selectedName}
-                    onChange={handleNameChange}
-                    autoComplete="off"
-                    placeholder="Ketik nama..."
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-
-                {filteredUsers.length > 0 && (
-                  <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                    {filteredUsers.map((user) => (
-                      <li
-                        key={user.id}
-                        onClick={() => handleSuggestionClick(user)}
-                        className="px-3 py-2 cursor-pointer hover:bg-indigo-100"
-                      >
-                        {user.name}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="kelas"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Kelas
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="kelas"
-                    name="kelas"
-                    type="text"
-                    value={selectedClass}
-                    disabled
-                    className="block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-6">
-                <label
-                  htmlFor="hari"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Hari Peminjaman
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="hari"
-                    name="hari"
-                    type="date"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="jamMulai"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Jam Peminjaman
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="jamMulai"
-                    name="jamMulai"
-                    type="time"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="jamSelesai"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Selesai Peminjaman
-                </label>
-                <div className="mt-2">
-                  <input
-                    id="jamSelesai"
-                    name="jamSelesai"
-                    type="time"
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="sm:col-span-6">
-                <label
-                  htmlFor="alasan"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Alasan Penggunaan
-                </label>
-                <div className="mt-2">
-                  <textarea
-                    id="alasan"
-                    name="alasan"
-                    rows="3"
-                    placeholder="Tulis alasan kenapa pinjam motor..."
-                    className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  ></textarea>
-                </div>
-              </div>
-
-              <div className="sm:col-span-6">
-                <label
-                  htmlFor="stnk"
-                  className="block text-sm font-medium text-gray-900"
-                >
-                  Butuh STNK
-                </label>
-                <div className="mt-2">
-                  <select
-                    id="stnk"
-                    name="stnk"
-                    className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Pilih</option>
-                    <option value="ya">Ya</option>
-                    <option value="tidak">Tidak</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          </div>
+                  {user.name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-x-4">
+        {/* KELAS */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Kelas
+          </label>
+          <input
+            id="kelas"
+            name="kelas"
+            type="text"
+            value={selectedClass}
+            disabled
+            className="mt-2 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 sm:text-sm"
+          />
+        </div>
+
+        {/* HARI */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Hari Peminjaman
+          </label>
+          <input
+            id="hari"
+            name="hari"
+            type="date"
+            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
+              errors.hari ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          {errors.hari && (
+            <p className="text-red-500 text-sm mt-1">{errors.hari}</p>
+          )}
+        </div>
+
+        {/* JAM MULAI */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Jam Peminjaman
+          </label>
+          <input
+            id="jamMulai"
+            name="jamMulai"
+            type="time"
+            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
+              errors.jamMulai ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          {errors.jamMulai && (
+            <p className="text-red-500 text-sm mt-1">{errors.jamMulai}</p>
+          )}
+        </div>
+
+        {/* JAM SELESAI */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Selesai Peminjaman
+          </label>
+          <input
+            id="jamSelesai"
+            name="jamSelesai"
+            type="time"
+            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
+              errors.jamSelesai ? "border-red-500" : "border-gray-300"
+            }`}
+          />
+          {errors.jamSelesai && (
+            <p className="text-red-500 text-sm mt-1">{errors.jamSelesai}</p>
+          )}
+        </div>
+
+        {/* ALASAN */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Alasan Penggunaan
+          </label>
+          <textarea
+            id="alasan"
+            name="alasan"
+            rows="3"
+            placeholder="Tulis alasan kenapa pinjam motor..."
+            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
+              errors.alasan ? "border-red-500" : "border-gray-300"
+            }`}
+          ></textarea>
+          {errors.alasan && (
+            <p className="text-red-500 text-sm mt-1">{errors.alasan}</p>
+          )}
+        </div>
+
+        {/* STNK */}
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Butuh STNK
+          </label>
+          <select
+            id="stnk"
+            name="stnk"
+            className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
+          >
+            <option value="">Pilih</option>
+            <option value="ya">Ya</option>
+            <option value="tidak">Tidak</option>
+          </select>
+        </div>
+
+        {/* ERROR GLOBAL */}
+        {errors.global && (
+          <p className="text-red-600 text-sm mt-4">{errors.global}</p>
+        )}
+
+        <div className="mt-8 flex items-center justify-end gap-x-4">
           <button
             type="button"
             className="text-sm font-semibold text-gray-900"
@@ -326,7 +381,7 @@ export default function FormPage() {
           </button>
           <button
             type="submit"
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-indigo-500"
           >
             Simpan
           </button>
