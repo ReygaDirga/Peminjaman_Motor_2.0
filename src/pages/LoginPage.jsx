@@ -32,8 +32,6 @@ export default function LoginPage() {
       setError("Akses ditolak, kamu bukan admin!");
       return;
     }
-
-    // Simpan session sederhana (bisa di localStorage)
     localStorage.setItem("adminName", user.name);
     localStorage.setItem("adminId", user.id);
     localStorage.setItem("role", user.role);

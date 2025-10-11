@@ -197,8 +197,6 @@ export default function FormPage() {
         }
       }
     }
-
-    // ✅ Insert data peminjaman
     const { error: insertError } = await supabase.from("borrow_request").insert([
       {
         users_id: userId,
@@ -214,7 +212,6 @@ export default function FormPage() {
       newErrors.global = "Gagal menyimpan data, coba lagi.";
       setErrors(newErrors);
     } else {
-      // 🎟 Update voucher jadi used kalau dipakai
       if (voucherUsed) {
         await supabase
           .from("vouchers")

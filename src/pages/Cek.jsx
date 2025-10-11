@@ -14,7 +14,7 @@ export default function CekPage() {
       .eq("borrow_date", date);
 
     if (error) {
-      console.error("❌ Error fetch:", error);
+      console.error("Error fetch:", error);
     } else {
       setBorrowData(data);
     }
