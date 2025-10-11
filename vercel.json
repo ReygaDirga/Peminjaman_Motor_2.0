@@ -1,8 +1,25 @@
 {
+  "redirects": [
+    {
+      "source": "/peraturan.html",
+      "destination": "/peraturan",
+      "permanent": true
+    },
+    {
+      "source": "/form.html",
+      "destination": "/form",
+      "permanent": true
+    },
+    {
+      "source": "/cek.html",
+      "destination": "/cek",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/peraturan.html", "destination": "/peraturan" },
-    { "source": "/form.html", "destination": "/form" },
-    { "source": "/cek.html", "destination": "/cek" },
+    { "source": "/peraturan", "destination": "/peraturan.html" },
+    { "source": "/form", "destination": "/form.html" },
+    { "source": "/cek", "destination": "/cek.html" },
     { "source": "/(.*)", "destination": "/" }
   ]
 }
