@@ -3,10 +3,9 @@ import { supabase } from "../lib/supabase";
 
 export default function CekPage() {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toLocaleDateString("en-CA")
   );
   const [borrowData, setBorrowData] = useState([]);
-
   const fetchBorrowData = async (date) => {
     const { data, error } = await supabase
       .from("borrow_request")
@@ -19,6 +18,7 @@ export default function CekPage() {
       setBorrowData(data);
     }
   };
+
   useEffect(() => {
     fetchBorrowData(selectedDate);
   }, [selectedDate]);
@@ -30,6 +30,7 @@ export default function CekPage() {
           <label htmlFor="tanggal" className="font-medium whitespace-nowrap">
             Pilih tanggal
           </label>
+
           <input
             type="date"
             id="tanggal"
@@ -44,7 +45,10 @@ export default function CekPage() {
         {borrowData.length === 0 ? (
           <p className="text-center text-gray-500">
             Belum ada peminjaman di tanggal{" "}
-            <span className="font-semibold">{new Date(selectedDate).toLocaleDateString("id-ID")}</span>.
+            <span className="font-semibold">
+              {new Date(selectedDate).toLocaleDateString("id-ID")}
+            </span>
+            .
           </p>
         ) : (
           <table className="w-full border-collapse border border-gray-300">
