@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/peraturan.html", "destination": "/peraturan" },
+    { "source": "/form.html", "destination": "/form" },
+    { "source": "/cek.html", "destination": "/cek" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
