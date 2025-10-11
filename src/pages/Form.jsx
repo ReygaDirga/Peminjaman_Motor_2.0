@@ -67,21 +67,88 @@ export default function FormPage() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    const newErrors = {};
+  e.preventDefault();
+  setLoading(true);
+  const newErrors = {};
 
-    const tanggal = e.target.hari.value;
-    const jamMulai = e.target.jamMulai.value;
-    const jamSelesai = e.target.jamSelesai.value;
-    const alasan = e.target.alasan.value;
-    const stnk = e.target.stnk.value;
+  const tanggal = e.target.hari.value;
+  const jamMulai = e.target.jamMulai.value;
+  const jamSelesai = e.target.jamSelesai.value;
+  const alasan = e.target.alasan.value.trim();
+  const stnk = e.target.stnk.value;
 
-    if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
-    if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
-    if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
-    if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
-    if (!alasan) newErrors.alasan = "Alasan peminjaman harus diisi";
+  if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
+  if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
+  if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
+  if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
+  if (!alasan) newErrors.alasan = "Alasan peminjaman harus diisi";
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    setLoading(false);
+    return;
+  }
+
+  try {
+    // 💡 Cek apakah alasan == kode voucher yang valid
+    const { data: voucherData, error: voucherError } = await supabase
+      .from("vouchers")
+      .select("*")
+      .eq("code", alasan)
+      .eq("is_used", false)
+      .maybeSingle();
+
+    const isVoucherValid = voucherData && !voucherError;
+
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("name", selectedName)
+      .single();
+
+    if (userError || !userData) {
+      newErrors.nama = "Nama peminjam tidak ditemukan";
+      setErrors(newErrors);
+      setLoading(false);
+      return;
+    }
+
+    const userId = userData.id;
+
+    // 🚀 Kalau voucher valid → kasih 5 jam otomatis dan skip validasi waktu
+    let finalEndTime = jamSelesai;
+    let voucherUsed = false;
+
+    if (isVoucherValid) {
+      console.log("🎟 Voucher valid, kasih bonus 5 jam!");
+      voucherUsed = true;
+
+      // tambah 5 jam ke jamMulai
+      const startDate = new Date(`1970-01-01T${jamMulai}`);
+      startDate.setHours(startDate.getHours() + 5);
+      finalEndTime = startDate.toTimeString().slice(0, 5); // ambil format HH:MM
+    } else {
+      // 🧠 Kalau gak ada voucher, baru cek validasi waktu normal
+      if (jamSelesai <= jamMulai)
+        newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(tanggal);
+      if (selectedDate < today)
+        newErrors.hari = "Tanggal tidak boleh di masa lalu";
+
+      const start = new Date(`1970-01-01T${jamMulai}`);
+      const end = new Date(`1970-01-01T${jamSelesai}`);
+      const durationHours = (end - start) / (1000 * 60 * 60);
+
+      if (durationHours <= 0)
+        newErrors.jamSelesai = "Durasi jamnya tidak valid";
+
+      const maxHours = selectedClass.toLowerCase() === "ppti 21" ? 4 : 3;
+      if (durationHours > maxHours)
+        newErrors.jamSelesai = `Kelas ${selectedClass} hanya boleh pinjam ${maxHours} jam`;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -89,47 +156,8 @@ export default function FormPage() {
       return;
     }
 
-    if (jamSelesai <= jamMulai)
-      newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDate = new Date(tanggal);
-    if (selectedDate < today)
-      newErrors.hari = "Tanggal tidak boleh di masa lalu";
-
-    const start = new Date(`1970-01-01T${jamMulai}`);
-    const end = new Date(`1970-01-01T${jamSelesai}`);
-    const durationHours = (end - start) / (1000 * 60 * 60);
-
-    if (durationHours <= 0)
-      newErrors.jamSelesai = "Durasi jamnya tidak valid";
-
-    const maxHours = selectedClass.toLowerCase() === "ppti 21" ? 4 : 3;
-    if (durationHours > maxHours)
-      newErrors.jamSelesai = `Kelas ${selectedClass} hanya boleh pinjam ${maxHours} jam`;
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("id")
-        .eq("name", selectedName)
-        .single();
-
-      if (userError || !userData) {
-        newErrors.nama = "Nama peminjam tidak ditemukan";
-        setErrors(newErrors);
-        setLoading(false);
-        return;
-      }
-
-      const userId = userData.id;
+    // 🧠 Skip validasi bentrok kalau voucher valid, biar sat-set
+    if (!isVoucherValid) {
       const [{ data: existingByUser }, { data: existingBookings }] = await Promise.all([
         supabase
           .from("borrow_request")
@@ -150,85 +178,77 @@ export default function FormPage() {
         totalHours += (e - s) / (1000 * 60 * 60);
       });
 
-      const formatHours = (hours) => {
-        const jam = Math.floor(hours);
-        const menit = Math.round((hours - jam) * 60);
-        if (jam === 0) return `${menit} menit`;
-        if (menit === 0) return `${jam} jam`;
-        return `${jam} jam ${menit} menit`;
-      };
-
-      if (totalHours + durationHours > 4) {
-        const over = totalHours + durationHours - 4;
-        newErrors.jamSelesai = `Total jam peminjaman ${formatHours(
-          totalHours + durationHours
-        )}, kelebihan ${formatHours(over)} dari batas 4 jam`;
+      if (totalHours > 4) {
+        newErrors.jamSelesai = `Kamu udah pinjam ${totalHours} jam hari ini (maks 4 jam)`;
         setErrors(newErrors);
         setLoading(false);
         return;
       }
+
       for (const booking of existingBookings || []) {
         const isOverlap =
           jamMulai < booking.end_time && jamSelesai > booking.start_time;
 
         if (isOverlap) {
-          const { data: bentrokUser } = await supabase
-            .from("users")
-            .select("name")
-            .eq("id", booking.users_id)
-            .single();
-
-          const conflictName = bentrokUser ? bentrokUser.name : "User lain";
-          newErrors.jamMulai =
-            booking.users_id === userId
-              ? `Zims liat, jadwal kamu bentrok (${booking.start_time} - ${booking.end_time})`
-              : `Bentrok dengan ${conflictName} (${booking.start_time} - ${booking.end_time})`;
+          newErrors.jamMulai = `Bentrok dengan jadwal lain (${booking.start_time} - ${booking.end_time})`;
           setErrors(newErrors);
           setLoading(false);
           return;
         }
       }
-
-      const { error } = await supabase.from("borrow_request").insert([
-        {
-          users_id: userId,
-          borrow_date: tanggal,
-          start_time: jamMulai,
-          end_time: jamSelesai,
-          reason: alasan,
-          need_stnk: stnk === "ya",
-        },
-      ]);
-
-      if (error) {
-        newErrors.global = "Gagal menyimpan data, coba lagi.";
-        setErrors(newErrors);
-      } else {
-        setShowModal(true);
-        setErrors({});
-        e.target.reset();
-        setSelectedName("");
-        setSelectedClass("");
-
-        const message = `
-        *Peminjaman Motor Baru!*
-        *==================*
-        *Nama:* ${selectedName}
-        *Kelas:* ${selectedClass}
-        *Tanggal:* ${tanggal}
-        *Waktu:* ${jamMulai} - ${jamSelesai}
-        *Alasan:* ${alasan}
-        *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
-        `;
-        sendTelegramMessage(message).catch(console.error);
-      }
-    } catch (err) {
-      newErrors.global = "Terjadi kesalahan tidak terduga.";
-      setErrors(newErrors);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // ✅ Insert data peminjaman
+    const { error: insertError } = await supabase.from("borrow_request").insert([
+      {
+        users_id: userId,
+        borrow_date: tanggal,
+        start_time: jamMulai,
+        end_time: finalEndTime,
+        reason: alasan,
+        need_stnk: stnk === "ya",
+      },
+    ]);
+
+    if (insertError) {
+      newErrors.global = "Gagal menyimpan data, coba lagi.";
+      setErrors(newErrors);
+    } else {
+      // 🎟 Update voucher jadi used kalau dipakai
+      if (voucherUsed) {
+        await supabase
+          .from("vouchers")
+          .update({ is_used: true })
+          .eq("code", alasan);
+      }
+
+      setShowModal(true);
+      setErrors({});
+      e.target.reset();
+      setSelectedName("");
+      setSelectedClass("");
+
+      const message = `
+      *Peminjaman Motor Baru!*
+      *==================*
+      *Nama:* ${selectedName}
+      *Kelas:* ${selectedClass}
+      *Tanggal:* ${tanggal}
+      *Waktu:* ${jamMulai} - ${finalEndTime}
+      *Alasan:* ${alasan}
+      *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
+      ${voucherUsed ? "\n🎟 Menggunakan Voucher 5 Jam Gratis!" : ""}
+      `;
+      sendTelegramMessage(message).catch(console.error);
+    }
+  } catch (err) {
+    newErrors.global = "Terjadi kesalahan tidak terduga.";
+    setErrors(newErrors);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="flex justify-center px-6">
