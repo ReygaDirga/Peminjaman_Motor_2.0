@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom'
 const navigation = [
   { name: 'Cek Ketersediaan', href: '/' },
   { name: 'Form Peminjaman', href: '/peraturan' },
+  { name: 'Generate Voucher', href: '/login' },
 ]
 
 function classNames(...classes) {
