@@ -90,7 +90,6 @@ export default function FormPage() {
   }
 
   try {
-    // 💡 Cek apakah alasan == kode voucher yang valid
     const { data: voucherData, error: voucherError } = await supabase
       .from("vouchers")
       .select("*")
@@ -114,21 +113,16 @@ export default function FormPage() {
     }
 
     const userId = userData.id;
-
-    // 🚀 Kalau voucher valid → kasih 5 jam otomatis dan skip validasi waktu
     let finalEndTime = jamSelesai;
     let voucherUsed = false;
 
     if (isVoucherValid) {
-      console.log("🎟 Voucher valid, kasih bonus 5 jam!");
       voucherUsed = true;
 
-      // tambah 5 jam ke jamMulai
       const startDate = new Date(`1970-01-01T${jamMulai}`);
       startDate.setHours(startDate.getHours() + 5);
-      finalEndTime = startDate.toTimeString().slice(0, 5); // ambil format HH:MM
+      finalEndTime = startDate.toTimeString().slice(0, 5);
     } else {
-      // 🧠 Kalau gak ada voucher, baru cek validasi waktu normal
       if (jamSelesai <= jamMulai)
         newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
 
@@ -155,8 +149,6 @@ export default function FormPage() {
       setLoading(false);
       return;
     }
-
-    // 🧠 Skip validasi bentrok kalau voucher valid, biar sat-set
     if (!isVoucherValid) {
       const [{ data: existingByUser }, { data: existingBookings }] = await Promise.all([
         supabase

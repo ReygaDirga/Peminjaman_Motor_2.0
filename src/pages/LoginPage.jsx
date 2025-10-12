@@ -40,8 +40,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow-md w-96">
+    <div className="flex justify-center items-center min-h-screen">
+      <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-lg font-semibold mb-4 text-center">Login Admin</h2>
 
         {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
