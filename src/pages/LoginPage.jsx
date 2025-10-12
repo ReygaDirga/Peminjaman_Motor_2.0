@@ -49,7 +49,7 @@ export default function LoginPage() {
         <label className="block text-sm font-medium text-gray-700 mb-1">Nama</label>
         <input
           type="text"
-          placeholder="Masukkan nama..."
+          placeholder="Masukkan nama"
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border px-3 py-2 rounded mb-4"
