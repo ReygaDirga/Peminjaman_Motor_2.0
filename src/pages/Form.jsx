@@ -120,7 +120,7 @@ export default function FormPage() {
       voucherUsed = true;
 
       const startDate = new Date(`1970-01-01T${jamMulai}`);
-      startDate.setHours(startDate.getHours() + 5);
+      startDate.setHours(startDate.getHours() + 6);
       finalEndTime = startDate.toTimeString().slice(0, 5);
     } else {
       if (jamSelesai <= jamMulai)
