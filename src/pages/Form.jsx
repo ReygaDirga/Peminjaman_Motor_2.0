@@ -303,6 +303,25 @@ export default function FormPage() {
             id="hari"
             name="hari"
             type="date"
+            onChange={(e) => {
+              const value = e.target.value;
+              const tanggal = new Date(value);
+              const blockdate = [14,15,16];
+              const selectedate = tanggal.getDate();
+
+              if (blockdate.includes(selectedate)){
+                setErrors((prev) => ({
+                  ...prev,
+                  hari: "Motor tidak tersedia tanggal 14–16 karena akan dilakukan servis."
+                }));
+                e.target.value = "";
+              } else {
+                setErrors((prev) => {
+                  const { hari, ...rest} = prev;
+                  return rest;
+                });
+              }
+            }}
             className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
               errors.hari ? "border-red-500" : "border-gray-300"
             }`}

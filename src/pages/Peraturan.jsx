@@ -43,6 +43,7 @@ export default function PeraturanPage() {
             <b>TIDAK DIIZINKAN</b>.
           </li>
           <li>Semua uang sewa akan masuk ke kas kelas.</li>
+          <li>Bensin menjadi tanggung jawab masing masing dari peminjam.</li>
           <li>Setelah peminjaman selesai, kunci motor harap diletakkan di laci motor, <b>JANGAN DIBAWA</b> kecuali ada permintaan dari pemilik motor</li>
         </ol>
 
