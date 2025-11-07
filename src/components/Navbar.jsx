@@ -5,7 +5,7 @@ import { Link, useLocation } from 'react-router-dom'
 const navigation = [
   { name: 'Cek Ketersediaan', href: '/' },
   { name: 'Form Peminjaman', href: '/peraturan' },
-  // { name: 'Edit Data', href: '/edit' },
+  { name: 'Edit Data', href: '/edit' },
   { name: 'Generate Voucher', href: '/login' },
 ]
 
