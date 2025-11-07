@@ -26,7 +26,7 @@ export default function PeraturanPage() {
                 denda Rp10.000/jam.
               </li>
               <li>
-                Selain PPTI 21 → maksimal <b>3 jam per orang per hari</b> (Rp10.000/jam).
+                Selain PPTI 21 → maksimal <b>3 jam per orang per hari</b> (Rp7.000/jam).
               </li>
               <li>
                 Kepanitiaan → maksimal <b>5 jam per hari</b> (gratis) bisa lebih jika sudah
