@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom'
 const navigation = [
   { name: 'Cek Ketersediaan', href: '/' },
   { name: 'Form Peminjaman', href: '/peraturan' },
+  { name: 'Edit Data', href: '/edit' },
   { name: 'Generate Voucher', href: '/login' },
 ]
 
@@ -59,11 +60,13 @@ export default function Navbar() {
       </div>
 
       <DisclosurePanel className="sm:hidden">
+        {({ close }) => (
         <div className="space-y-1 px-2 pt-2 pb-3">
           {navigation.map((item) => (
             <Link
               key={item.name}
               to={item.href}
+              onClick={() => close()}
               className={classNames(
                 location.pathname === item.href
                   ? 'bg-[#6077ba] text-white'
@@ -75,6 +78,7 @@ export default function Navbar() {
             </Link>
           ))}
         </div>
+        )}
       </DisclosurePanel>
     </Disclosure>
   )
