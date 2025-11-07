@@ -10,7 +10,8 @@ export default function CekPage() {
     const { data, error } = await supabase
       .from("borrow_request")
       .select(`*, users(name, class)`)
-      .eq("borrow_date", date);
+      .eq("borrow_date", date)
+      .order("start_time", { ascending: true });
 
     if (error) {
       console.error("Error fetch:", error);
