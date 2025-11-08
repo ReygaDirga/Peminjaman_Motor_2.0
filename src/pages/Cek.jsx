@@ -25,7 +25,7 @@ export default function CekPage() {
   }, [selectedDate]);
 
   return (
-    <div className="min-h-screen bg-white py-4">
+    <div className="min-h-screen bg-white py-4 pt-25">
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
           <label htmlFor="tanggal" className="font-medium whitespace-nowrap">

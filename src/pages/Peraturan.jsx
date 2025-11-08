@@ -9,7 +9,7 @@ export default function PeraturanPage() {
   };
 
   return (
-    <div className="flex items-center justify-center px-6">
+    <div className="flex items-center justify-center px-6 pt-15">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-10">
         <h1 className="text-2xl font-bold text-center mb-8">
           📌 Aturan Peminjaman Motor Kelas PPTI 21

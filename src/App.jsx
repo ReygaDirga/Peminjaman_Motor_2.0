@@ -12,7 +12,7 @@ export default function App() {
   return (
     <Router>
       <Navbar />
-      <div className="pt-20">
+      <div>
         <Routes>
           <Route path="/" element={<CekPage />} />
           <Route path="/form" element={<FormPage />} />

@@ -118,7 +118,7 @@ export default function CekPage() {
   const userName = localStorage.getItem("Name");
 
   return (
-    <div className="min-h-screen bg-white py-4">
+    <div className="min-h-screen bg-white py-4 pt-20">
       <div className="max-w-3xl mx-auto">
         {borrowData.length === 0 ? (
           <p className="text-center text-gray-500">

@@ -5,6 +5,47 @@ import ModalBerhasil from "../components/ModalBerhasil";
 import ModalBentrok from "../components/ModalBentrok";
 import { sendTelegramMessage } from "../lib/telegram";
 
+const addHours = (timeStr, hours) => {
+  const d = new Date(`1970-01-01T${timeStr}`);
+  d.setHours(d.getHours() + hours);
+  return d.toTimeString().slice(0, 5);
+};
+
+const parseVoucherType = (raw) => {
+  if (!raw) return null;
+  const code = raw.trim().toUpperCase();
+  const match = code.match(/^[A-Z]{3}-[A-Z0-9]{6,10}$/);
+  if (!match) return null;
+  const prefix = code.split("-")[0];
+  if (prefix === "AUR" || prefix === "VCH") return { type: "aurum", code };
+  if (prefix === "PLT") return { type: "platina", code };
+  return { type: "unknown", code };
+};
+
+const checkVoucher = async (rawCode) => {
+  const info = parseVoucherType(rawCode);
+  if (!info) return { valid: false };
+
+  const table =
+    info.type === "aurum"
+      ? "vouchers"
+      : info.type === "platina"
+      ? "vouchersFD"
+      : null;
+  if (!table) return { valid: false };
+
+  const { data, error } = await supabase
+    .from(table)
+    .select("*")
+    .eq("code", info.code)
+    .eq("is_used", false)
+    .maybeSingle();
+
+  if (data && !error)
+    return { valid: true, type: info.type, table, code: info.code };
+  return { valid: false };
+};
+
 export default function FormPage() {
   const navigate = useNavigate();
 
@@ -14,46 +55,45 @@ export default function FormPage() {
   const [selectedClass, setSelectedClass] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-
   const [showModal, setShowModal] = useState(false);
-  const [showBentrok, setShowBentrok] = useState(false);
-  const [conflictInfo, setConflictInfo] = useState("");
+  const [voucherList, setVoucherList] = useState([]);
 
   useEffect(() => {
     const agreed = localStorage.getItem("agreedToRules");
     if (agreed !== "true") navigate("/peraturan");
 
     const fetchUsers = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, name, class");
+      const { data, error } = await supabase.from("users").select("id, name, class");
+      if (!error) setUsers(data);
+    };
 
-      if (error) console.error("Error fetch users:", error);
-      else setUsers(data);
+    const fetchVouchers = async () => {
+      const [{ data: aurum }, { data: platina }] = await Promise.all([
+        supabase.from("vouchers").select("code").eq("is_used", false),
+        supabase.from("vouchersFD").select("code").eq("is_used", false),
+      ]);
+
+      const formatted = [
+        ...(aurum?.map((v) => ({ code: v.code, type: "Aurum" })) || []),
+        ...(platina?.map((v) => ({ code: v.code, type: "Platina" })) || []),
+      ];
+
+      setVoucherList(formatted);
     };
 
     fetchUsers();
+    fetchVouchers();
   }, [navigate]);
 
   const handleNameChange = (e) => {
     const value = e.target.value;
     setSelectedName(value);
-
-    if (value.trim() === "") {
-      setFilteredUsers([]);
-      setSelectedClass("");
-      return;
-    }
-
+    if (!value.trim()) return setFilteredUsers([]);
     const filtered = users.filter((u) =>
       u.name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredUsers(filtered);
-
-    if (
-      filtered.length === 1 &&
-      value.toLowerCase() === filtered[0].name.toLowerCase()
-    ) {
+    if (filtered.length === 1 && value.toLowerCase() === filtered[0].name.toLowerCase()) {
       setSelectedName(filtered[0].name);
       setSelectedClass(filtered[0].class);
       setFilteredUsers([]);
@@ -65,103 +105,63 @@ export default function FormPage() {
     setSelectedClass(user.class);
     setFilteredUsers([]);
   };
-
+  
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  const newErrors = {};
+    e.preventDefault();
+    setLoading(true);
+    const newErrors = {};
 
-  const tanggal = e.target.hari.value;
-  const jamMulai = e.target.jamMulai.value;
-  const jamSelesai = e.target.jamSelesai.value;
-  const alasan = e.target.alasan.value.trim();
-  const stnk = e.target.stnk.value;
+    const tanggal = e.target.hari.value;
+    const jamMulai = e.target.jamMulai.value;
+    const jamSelesai = e.target.jamSelesai.value;
+    const alasan = e.target.alasan.value.trim();
+    const stnk = e.target.stnk.value;
 
-  if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
-  if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
-  if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
-  if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
-  if (!alasan) newErrors.alasan = "Alasan peminjaman harus diisi";
-
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const { data: voucherData, error: voucherError } = await supabase
-      .from("vouchers")
-      .select("*")
-      .eq("code", alasan)
-      .eq("is_used", false)
-      .maybeSingle();
-
-    const isVoucherValid = voucherData && !voucherError;
-
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("name", selectedName)
-      .single();
-
-    if (userError || !userData) {
-      newErrors.nama = "Nama peminjam tidak ditemukan";
-      setErrors(newErrors);
-      setLoading(false);
-      return;
-    }
-
-    const userId = userData.id;
-    let finalEndTime = jamSelesai;
-    let voucherUsed = false;
-
-    if (isVoucherValid) {
-      voucherUsed = true;
-
-      const startDate = new Date(`1970-01-01T${jamMulai}`);
-      startDate.setHours(startDate.getHours() + 6);
-      finalEndTime = startDate.toTimeString().slice(0, 5);
-    } else {
-      if (jamSelesai <= jamMulai)
-        newErrors.jamSelesai = "Jam selesai harus lebih besar dari jam mulai";
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const selectedDate = new Date(tanggal);
-      if (selectedDate < today)
-        newErrors.hari = "Tanggal tidak boleh di masa lalu";
-
-      const start = new Date(`1970-01-01T${jamMulai}`);
-      const end = new Date(`1970-01-01T${jamSelesai}`);
-      const durationHours = (end - start) / (1000 * 60 * 60);
-
-      if (durationHours <= 0)
-        newErrors.jamSelesai = "Durasi jamnya tidak valid";
-
-      const maxHours = selectedClass.toLowerCase() === "ppti 21" ? 4 : 3;
-      if (durationHours > maxHours)
-        newErrors.jamSelesai = `Kelas ${selectedClass} hanya boleh pinjam ${maxHours} jam`;
-    }
+    if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
+    if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
+    if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
+    if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
+    if (!alasan) newErrors.alasan = "Alasan peminjaman / kode voucher harus diisi";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setLoading(false);
       return;
     }
-    if (!isVoucherValid) {
-      const [{ data: existingByUser }, { data: existingBookings }] = await Promise.all([
-        supabase
-          .from("borrow_request")
-          .select("start_time, end_time")
-          .eq("borrow_date", tanggal)
-          .eq("users_id", userId),
 
-        supabase
-          .from("borrow_request")
-          .select("start_time, end_time, users_id")
-          .eq("borrow_date", tanggal),
-      ]);
+    try {
+      const voucherCheck = await checkVoucher(alasan);
+      const isVoucherValid = voucherCheck.valid;
+
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("name", selectedName)
+        .single();
+
+      if (userError || !userData) {
+        newErrors.nama = "Nama peminjam tidak ditemukan";
+        setErrors(newErrors);
+        setLoading(false);
+        return;
+      }
+
+      const userId = userData.id;
+      let finalEndTime = jamSelesai;
+
+      if (isVoucherValid) {
+        if (voucherCheck.type === "aurum") {
+          finalEndTime = addHours(jamMulai, 5);
+        } else if (voucherCheck.type === "platina") {
+          finalEndTime = "21:00";
+        }
+      }
+
+      const { data: existingByUser } = await supabase
+        .from("borrow_request")
+        .select("start_time, end_time")
+        .eq("borrow_date", tanggal)
+        .eq("users_id", userId);
 
       let totalHours = 0;
       existingByUser?.forEach((b) => {
@@ -170,16 +170,27 @@ export default function FormPage() {
         totalHours += (e - s) / (1000 * 60 * 60);
       });
 
-      if (totalHours > 4) {
-        newErrors.jamSelesai = `Kamu udah pinjam ${totalHours} jam hari ini (maks 4 jam)`;
+      const sNew = new Date(`1970-01-01T${jamMulai}`);
+      const eNew = new Date(`1970-01-01T${finalEndTime}`);
+      const durationNew = (eNew - sNew) / (1000 * 60 * 60);
+
+      if (totalHours + durationNew > 4 && !isVoucherValid) {
+        newErrors.jamSelesai = `Total durasi hari ini ${totalHours + durationNew} jam (maks 4 jam tanpa voucher)`;
         setErrors(newErrors);
         setLoading(false);
         return;
       }
 
+      const { data: existingBookings } = await supabase
+        .from("borrow_request")
+        .select("start_time, end_time")
+        .eq("borrow_date", tanggal);
+
+      const toDate = (t) => new Date(`1970-01-01T${t}`);
       for (const booking of existingBookings || []) {
         const isOverlap =
-          jamMulai < booking.end_time && jamSelesai > booking.start_time;
+          toDate(jamMulai) < toDate(booking.end_time) &&
+          toDate(finalEndTime) > toDate(booking.start_time);
 
         if (isOverlap) {
           newErrors.jamMulai = `Bentrok dengan jadwal lain (${booking.start_time} - ${booking.end_time})`;
@@ -188,59 +199,58 @@ export default function FormPage() {
           return;
         }
       }
-    }
-    const { error: insertError } = await supabase.from("borrow_request").insert([
-      {
-        users_id: userId,
-        borrow_date: tanggal,
-        start_time: jamMulai,
-        end_time: finalEndTime,
-        reason: alasan,
-        need_stnk: stnk === "ya",
-      },
-    ]);
 
-    if (insertError) {
-      newErrors.global = "Gagal menyimpan data, coba lagi.";
-      setErrors(newErrors);
-    } else {
-      if (voucherUsed) {
-        await supabase
-          .from("vouchers")
-          .update({ is_used: true })
-          .eq("code", alasan);
+      const { error: insertError } = await supabase.from("borrow_request").insert([
+        {
+          users_id: userId,
+          borrow_date: tanggal,
+          start_time: jamMulai,
+          end_time: finalEndTime,
+          reason: alasan,
+          need_stnk: stnk === "ya",
+        },
+      ]);
+
+      if (insertError) {
+        newErrors.global = "Gagal menyimpan data, coba lagi.";
+        setErrors(newErrors);
+      } else {
+        if (isVoucherValid) {
+          await supabase
+            .from(voucherCheck.table)
+            .update({ is_used: true })
+            .eq("code", voucherCheck.code);
+        }
+
+        setShowModal(true);
+        setErrors({});
+        e.target.reset();
+        setSelectedName("");
+        setSelectedClass("");
+
+        const message = `
+        📋 *Peminjaman Motor Baru!*
+        ===========================
+        👤 *Nama:* ${selectedName}
+        🏫 *Kelas:* ${selectedClass}
+        📅 *Tanggal:* ${tanggal}
+        🕒 *Waktu:* ${jamMulai} - ${finalEndTime}
+        📄 *Alasan/Kode:* ${alasan}
+        🪪 *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
+        ${isVoucherValid ? `🎟 *Voucher:* ${voucherCheck.type.toUpperCase()} (${voucherCheck.code})` : ""}
+        `;
+        sendTelegramMessage(message).catch(console.error);
       }
-
-      setShowModal(true);
-      setErrors({});
-      e.target.reset();
-      setSelectedName("");
-      setSelectedClass("");
-
-      const message = `
-      *Peminjaman Motor Baru!*
-      *==================*
-      *Nama:* ${selectedName}
-      *Kelas:* ${selectedClass}
-      *Tanggal:* ${tanggal}
-      *Waktu:* ${jamMulai} - ${finalEndTime}
-      *Alasan:* ${alasan}
-      *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
-      ${voucherUsed ? "\n🎟 Menggunakan Voucher 5 Jam Gratis!" : ""}
-      `;
-      sendTelegramMessage(message).catch(console.error);
+    } catch (err) {
+      newErrors.global = "Terjadi kesalahan tidak terduga.";
+      setErrors(newErrors);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    newErrors.global = "Terjadi kesalahan tidak terduga.";
-    setErrors(newErrors);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
-    <div className="flex justify-center px-6">
+    <div className="flex justify-center px-6 pt-20">
       <form
         className="w-full max-w-5xl bg-white p-8 rounded-lg shadow-md"
         onSubmit={handleSubmit}
@@ -248,9 +258,6 @@ export default function FormPage() {
         <h2 className="text-lg font-semibold text-gray-900">
           Formulir Peminjaman Motor PPTI 21
         </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          Silakan isi data peminjaman dengan benar ya
-        </p>
 
         <div className="mt-6 relative">
           <label className="block text-sm font-medium text-gray-900">
@@ -268,9 +275,6 @@ export default function FormPage() {
               errors.nama ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.nama && (
-            <p className="text-red-500 text-sm mt-1">{errors.nama}</p>
-          )}
           {filteredUsers.length > 0 && (
             <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
               {filteredUsers.map((user) => (
@@ -284,7 +288,11 @@ export default function FormPage() {
               ))}
             </ul>
           )}
+          {errors.nama && (
+            <p className="mt-1 text-sm text-red-600">{errors.nama}</p>
+          )}
         </div>
+
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">Kelas</label>
           <input
@@ -298,27 +306,30 @@ export default function FormPage() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Hari Peminjaman</label>
+          <label className="block text-sm font-medium text-gray-900">
+            Hari Peminjaman
+          </label>
           <input
             id="hari"
             name="hari"
             type="date"
             onChange={(e) => {
               const value = e.target.value;
-              const tanggal = new Date(value);
-              const blockdate = [14,15,16];
-              const selectedate = tanggal.getDate();
+              const date = new Date(value);
+              const day = date.getDate();
+              const blockedDays = [14, 15, 16];
 
-              if (blockdate.includes(selectedate)){
+              if (blockedDays.includes(day)) {
+                e.target.value = ""; 
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Motor tidak tersedia tanggal 14–16 karena akan dilakukan servis."
+                  hari: "Tanggal 14-16 tidak bisa meminjam dikarenakan motor akan di servis",
                 }));
-                e.target.value = "";
               } else {
                 setErrors((prev) => {
-                  const { hari, ...rest} = prev;
-                  return rest;
+                  const newErrors = { ...prev };
+                  delete newErrors.hari;
+                  return newErrors;
                 });
               }
             }}
@@ -326,51 +337,94 @@ export default function FormPage() {
               errors.hari ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {errors.hari && <p className="text-red-500 text-sm mt-1">{errors.hari}</p>}
-        </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Jam Mulai</label>
-          <input
-            id="jamMulai"
-            name="jamMulai"
-            type="time"
-            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
-              errors.jamMulai ? "border-red-500" : "border-gray-300"
-            }`}
-          />
-          {errors.jamMulai && <p className="text-red-500 text-sm mt-1">{errors.jamMulai}</p>}
-        </div>
-
-        <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Jam Selesai</label>
-          <input
-            id="jamSelesai"
-            name="jamSelesai"
-            type="time"
-            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
-              errors.jamSelesai ? "border-red-500" : "border-gray-300"
-            }`}
-          />
-          {errors.jamSelesai && (
-            <p className="text-red-500 text-sm mt-1">{errors.jamSelesai}</p>
+          {errors.hari && (
+            <p className="mt-1 text-sm text-red-600">{errors.hari}</p>
           )}
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Alasan</label>
+          <div>
+            <label className="block text-sm font-medium text-gray-900">Jam Mulai</label>
+            <input
+              id="jamMulai"
+              name="jamMulai"
+              type="time"
+              className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
+            />
+          </div>
+          {errors.jamMulai && <p className="mt-1 text-sm text-red-600">{errors.jamMulai}</p>}
+        </div>
+
+        <div className="mt-6">
+         <div>
+            <label className="block text-sm font-medium text-gray-900">Jam Selesai</label>
+            <input
+              id="jamSelesai"
+              name="jamSelesai"
+              type="time"
+              className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
+            />
+          </div>
+          {errors.jamSelesai && <p className="mt-1 text-sm text-red-600">{errors.jamSelesai}</p>}
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Alasan
+          </label>
           <textarea
             id="alasan"
             name="alasan"
             rows="3"
-            placeholder="Tulis alasan kenapa minjam motor..."
-            className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
-              errors.alasan ? "border-red-500" : "border-gray-300"
-            }`}
+            placeholder="Tulis alasan atau pilih voucher di bawah ini"
+            className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
           ></textarea>
-          {errors.alasan && (
-            <p className="text-red-500 text-sm mt-1">{errors.alasan}</p>
+        </div>
+
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-900">
+            Voucher
+          </label>
+          {voucherList.length > 0 ? (
+            <select
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val !== "") {
+                  document.getElementById("alasan").value = val;
+                }
+              }}
+              className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
+            >
+              <option value="">Pilih voucher yang tersedia</option>
+              {voucherList.map((v, i) => (
+                <option key={i} value={v.code}>
+                  🎟 {v.type} — {v.code}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <p className="text-gray-400 text-sm mt-2">
+              Tidak ada voucher yang aktif saat ini.
+            </p>
           )}
+
+          <button
+            type="button"
+            onClick={async () => {
+              const [{ data: aurum }, { data: platina }] = await Promise.all([
+                supabase.from("vouchers").select("code").eq("is_used", false),
+                supabase.from("vouchersFD").select("code").eq("is_used", false),
+              ]);
+              const formatted = [
+                ...(aurum?.map((v) => ({ code: v.code, type: "Aurum" })) || []),
+                ...(platina?.map((v) => ({ code: v.code, type: "Platina" })) || []),
+              ];
+              setVoucherList(formatted);
+            }}
+            className="mt-2 text-sm text-indigo-600 hover:underline"
+          >
+            Refresh Voucher
+          </button>
         </div>
 
         <div className="mt-6">
@@ -386,13 +440,11 @@ export default function FormPage() {
           </select>
         </div>
 
-        {errors.global && <p className="text-red-600 text-sm mt-4">{errors.global}</p>}
-
         <div className="mt-8 flex items-center justify-end gap-x-4">
           <button
             type="button"
-            className="text-sm font-semibold text-gray-900"
             onClick={() => navigate("/")}
+            className="text-sm font-semibold text-gray-900"
           >
             Batal
           </button>
@@ -400,9 +452,7 @@ export default function FormPage() {
             type="submit"
             disabled={loading}
             className={`rounded-md px-4 py-2 text-sm font-semibold text-white shadow ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-indigo-600 hover:bg-indigo-500"
+              loading ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-500"
             }`}
           >
             {loading ? "Menyimpan..." : "Simpan"}
@@ -412,9 +462,9 @@ export default function FormPage() {
 
       <ModalBerhasil isOpen={showModal} onClose={() => setShowModal(false)} />
       <ModalBentrok
-        isOpen={showBentrok}
-        onClose={() => setShowBentrok(false)}
-        conflictInfo={conflictInfo}
+        isOpen={false}
+        onClose={() => {}}
+        conflictInfo={""}
       />
     </div>
   );
