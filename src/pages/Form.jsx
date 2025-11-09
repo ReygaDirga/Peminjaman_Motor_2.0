@@ -317,13 +317,13 @@ export default function FormPage() {
               const value = e.target.value;
               const date = new Date(value);
               const day = date.getDate();
-              const blockedDays = [14, 15, 16];
+              const blockedDays = [14, 15];
 
               if (blockedDays.includes(day)) {
                 e.target.value = ""; 
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Tanggal 14-16 tidak bisa meminjam dikarenakan motor akan di servis",
+                  hari: "Tanggal 14-15 tidak bisa meminjam dikarenakan motor akan di servis",
                 }));
               } else {
                 setErrors((prev) => {
@@ -398,7 +398,7 @@ export default function FormPage() {
               <option value="">Pilih voucher yang tersedia</option>
               {voucherList.map((v, i) => (
                 <option key={i} value={v.code}>
-                  🎟 {v.type} — {v.code}
+                  {v.type} - {v.code}
                 </option>
               ))}
             </select>
