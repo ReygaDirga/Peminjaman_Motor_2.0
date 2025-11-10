@@ -11,19 +11,17 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    const { data: user } = await supabase
+    const { data: user, } = await supabase
       .from("users")
-      .select("id, name")
-      .eq("id", code)
+      .select("id, name, nim")
+      .eq("nim", code)
       .single();
 
-    if (user.id !== code) {
-      setError("Kode salah!");
-      return;
-    }
+    
 
     localStorage.setItem("Name", user.name);
     localStorage.setItem("ID", user.id);
+    localStorage.setItem("NIM", user.nim);
 
     navigate("/rud");
   };
@@ -35,10 +33,10 @@ export default function LoginPage() {
 
         {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Kode Masuk</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">NIM</label>
         <input
           type="text"
-          placeholder="Masukkan kode"
+          placeholder="Masukkan NIM"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           className="w-full border px-3 py-2 rounded mb-4"
