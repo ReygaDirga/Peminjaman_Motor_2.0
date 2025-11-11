@@ -317,13 +317,13 @@ export default function FormPage() {
               const value = e.target.value;
               const date = new Date(value);
               const day = date.getDate();
-              const blockedDays = [14, 15];
+              const blockedDays = [14, 15, 28, 29, 30];
 
               if (blockedDays.includes(day)) {
                 e.target.value = ""; 
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Tanggal 14-15 tidak bisa meminjam dikarenakan motor akan di servis",
+                  hari: "Tidak bisa meminjam motor di tanggal 14, 15, 28, 29, 30.",
                 }));
               } else {
                 setErrors((prev) => {
