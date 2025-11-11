@@ -23,7 +23,7 @@ export default function PeraturanPage() {
             <ul className="list-disc list-inside ml-5 mt-1 space-y-1">
               <li>
                 Kelas PPTI 21 → Gratis <b>4 jam per orang per hari</b>. Lebih dari itu akan dikenakan
-                denda Rp10.000/jam.
+                denda Rp15.000/jam.
               </li>
               <li>
                 Selain PPTI 21 → maksimal <b>3 jam per orang per hari</b> (Rp7.000/jam).
