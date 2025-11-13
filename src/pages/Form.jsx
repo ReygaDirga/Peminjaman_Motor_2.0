@@ -323,7 +323,7 @@ export default function FormPage() {
                 e.target.value = ""; 
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Tidak bisa meminjam motor di tanggal 14, 15, 28, 29, 30.",
+                  hari: "Tidak bisa meminjam motor di tanggal 15, 28, 29, 30.",
                 }));
               } else {
                 setErrors((prev) => {
