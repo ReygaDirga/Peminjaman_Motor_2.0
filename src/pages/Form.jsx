@@ -153,7 +153,7 @@ export default function FormPage() {
         if (voucherCheck.type === "aurum") {
           finalEndTime = addHours(jamMulai, 5);
         } else if (voucherCheck.type === "platina") {
-          finalEndTime = "21:00";
+          finalEndTime = "16:00";
         }
       }
 
