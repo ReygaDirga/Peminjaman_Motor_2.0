@@ -58,7 +58,7 @@ export default function CekPage() {
                 <th className="border p-2">Mulai</th>
                 <th className="border p-2">Selesai</th>
                 <th className="border p-2">Nama</th>
-                <th className="border p-2">Kelas</th>
+                <th className="border p-2">Alasan/Kelas</th>
               </tr>
             </thead>
             <tbody>
@@ -67,7 +67,9 @@ export default function CekPage() {
                   <td className="border p-2">{row.start_time}</td>
                   <td className="border p-2">{row.end_time}</td>
                   <td className="border p-2">{row.users?.name}</td>
-                  <td className="border p-2">{row.users?.class}</td>
+                  <td className="border p-2">
+                    {row.users?.name == "Rio Dwi Oktavianto" ? row.reason : row.users?.class}
+                  </td>
                 </tr>
               ))}
             </tbody>
