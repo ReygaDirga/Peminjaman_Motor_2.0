@@ -317,7 +317,7 @@ export default function FormPage() {
               const value = e.target.value;
               const date = new Date(value);
               const day = date.getDate();
-              const blockedDays = [28, 29, 30];
+              const blockedDays = [];
 
               if (blockedDays.includes(day)) {
                 e.target.value = ""; 
