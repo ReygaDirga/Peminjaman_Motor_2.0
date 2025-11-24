@@ -12,39 +12,36 @@ export default function PeraturanPage() {
     <div className="flex items-center justify-center px-6 pt-15">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-10">
         <h1 className="text-2xl font-bold text-center mb-8">
-          📌 Aturan Peminjaman Motor Kelas PPTI 21
+          📌 Borrowing Rules PPTI 21
         </h1>
 
         <ol className="list-decimal list-inside space-y-3 text-gray-700 mb-8 text-base leading-relaxed">
-          <li>Motor disiapkan untuk mendukung aktivitas <b>PPTI 21</b>.</li>
-          <li>Selain kelas PPTI 21 peminjaman motor dilakukan dengan sistem sewa.</li>
+          <li>Motorcycles are provided to support <b>PPTI 21</b> activities.</li>
+          <li>Outside PPTI 21, borrowing is subject to a rental system.</li>
           <li>
-            Batas waktu pemakaian:
+            Usage time limits:
             <ul className="list-disc list-inside ml-5 mt-1 space-y-1">
               <li>
-                Kelas PPTI 21 → Gratis <b>4 jam per orang per hari</b>. Lebih dari itu akan dikenakan
-                denda Rp15.000/jam.
+                PPTI 21 → Free <b>4 hours per person per day</b>. More than that will be charged Rp15.000/hour.
               </li>
               <li>
-                Selain PPTI 21 → maksimal <b>3 jam per orang per hari</b> (Rp7.000/jam).
+                Non-PPTI 21 → Maximum <b>3 hours per person per day</b> (Rp7.000/hour).
               </li>
               <li>
-                Kepanitiaan → maksimal <b>5 jam per hari</b> (gratis) bisa lebih jika sudah
-                mendapat izin.
+                Committee Members → Maximum <b>5 hours per day</b> (free, but only with prior approval).
               </li>
             </ul>
           </li>
           <li>
-            Di luar kelas PPTI 21 jika penggunaan &lt; 1 jam atau hanya untuk beli makan, maka
-            tidak dikenakan biaya sewa.
+            For non-PPTI 21 usage less than 1 hour or only for buying food, no rental fee will be charged.
           </li>
           <li>
-            Penggunaan/Peminjaman motor lebih dari batas waktu yang telah ditentukan maka{" "}
-            <b>TIDAK DIIZINKAN</b>.
+            Using the motorcycle longer than the allowed time is{" "}
+            <b>NOT PERMITTED</b>
           </li>
-          <li>Semua uang sewa akan masuk ke kas kelas.</li>
-          <li>Bensin menjadi tanggung jawab masing masing dari peminjam.</li>
-          <li>Setelah peminjaman selesai, kunci motor harap diletakkan di laci motor, <b>JANGAN DIBAWA</b> kecuali ada permintaan dari pemilik motor</li>
+          <li>All rental funds will go to the class treasury.</li>
+          <li>Fuel is the responsibility of the borrower.</li>
+          <li>After returning the motorcycle, please leave the key in the motorcycle compartment. <b>DO NOT TAKE IT</b>, unless specifically requested by the owner.</li>
         </ol>
 
         <div className="flex justify-center gap-4">
@@ -52,13 +49,13 @@ export default function PeraturanPage() {
             onClick={() => navigate("/")}
             className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
           >
-            Cek Ketersediaan
+            Check Availability
           </button>
           <button
             onClick={handleAgree}
             className="px-4 py-2 bg-[#6077ba] text-white rounded hover:bg-indigo-500 transition"
           >
-            Saya Setuju
+            I Agree
           </button>
         </div>
       </div>

@@ -117,11 +117,11 @@ export default function FormPage() {
     const alasan = e.target.alasan.value.trim();
     const stnk = e.target.stnk.value;
 
-    if (!selectedName) newErrors.nama = "Nama peminjam harus diisi";
-    if (!tanggal) newErrors.hari = "Tanggal peminjaman harus diisi";
-    if (!jamMulai) newErrors.jamMulai = "Jam mulai harus diisi";
-    if (!jamSelesai) newErrors.jamSelesai = "Jam selesai harus diisi";
-    if (!alasan) newErrors.alasan = "Alasan peminjaman / kode voucher harus diisi";
+    if (!selectedName) newErrors.nama = "Borrower name is required";
+    if (!tanggal) newErrors.hari = "Borrowing date is required";
+    if (!jamMulai) newErrors.jamMulai = "Start time is required";
+    if (!jamSelesai) newErrors.jamSelesai = "End time is required";
+    if (!alasan) newErrors.alasan = "Reason or voucher code is required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -140,7 +140,7 @@ export default function FormPage() {
         .single();
 
       if (userError || !userData) {
-        newErrors.nama = "Nama peminjam tidak ditemukan";
+        newErrors.nama = "Borrower name not found";
         setErrors(newErrors);
         setLoading(false);
         return;
@@ -153,7 +153,7 @@ export default function FormPage() {
         if (voucherCheck.type === "aurum") {
           finalEndTime = addHours(jamMulai, 5);
         } else if (voucherCheck.type === "platina") {
-          finalEndTime = "16:00";
+          finalEndTime = addHours(jamMulai, 20);
         }
       }
 
@@ -175,7 +175,7 @@ export default function FormPage() {
       const durationNew = (eNew - sNew) / (1000 * 60 * 60);
 
       if (totalHours + durationNew > 4 && !isVoucherValid) {
-        newErrors.jamSelesai = `Total durasi hari ini ${totalHours + durationNew} jam (maks 4 jam tanpa voucher)`;
+        newErrors.jamSelesai = `Total duration today ${totalHours + durationNew} hours (max 4 hours without a voucher)`;
         setErrors(newErrors);
         setLoading(false);
         return;
@@ -193,7 +193,7 @@ export default function FormPage() {
           toDate(finalEndTime) > toDate(booking.start_time);
 
         if (isOverlap) {
-          newErrors.jamMulai = `Bentrok dengan jadwal lain (${booking.start_time} - ${booking.end_time})`;
+          newErrors.jamMulai = `Conflicts with another booking (${booking.start_time} - ${booking.end_time})`;
           setErrors(newErrors);
           setLoading(false);
           return;
@@ -207,12 +207,12 @@ export default function FormPage() {
           start_time: jamMulai,
           end_time: finalEndTime,
           reason: alasan,
-          need_stnk: stnk === "ya",
+          need_stnk: stnk === "yes",
         },
       ]);
 
       if (insertError) {
-        newErrors.global = "Gagal menyimpan data, coba lagi.";
+        newErrors.global = "Failed to save data, please try again.";
         setErrors(newErrors);
       } else {
         if (isVoucherValid) {
@@ -228,21 +228,21 @@ export default function FormPage() {
         setSelectedName("");
         setSelectedClass("");
 
-        const message = `
-        📋 *Peminjaman Motor Baru!*
-        ===========================
-        👤 *Nama:* ${selectedName}
-        🏫 *Kelas:* ${selectedClass}
-        📅 *Tanggal:* ${tanggal}
-        🕒 *Waktu:* ${jamMulai} - ${finalEndTime}
-        📄 *Alasan/Kode:* ${alasan}
-        🪪 *Butuh STNK:* ${stnk === "ya" ? "Ya" : "Tidak"}
-        ${isVoucherValid ? `🎟 *Voucher:* ${voucherCheck.type.toUpperCase()} (${voucherCheck.code})` : ""}
-        `;
+      const message = `
+      📋 *New Motorcycle Borrowing Request!*
+      ===========================
+      👤 *Name:* ${selectedName}
+      🏫 *Class:* ${selectedClass}
+      📅 *Date:* ${tanggal}
+      🕒 *Time:* ${jamMulai} - ${finalEndTime}
+      📄 *Reason / Code:* ${alasan}
+      🪪 *Need STNK:* ${stnk === "ya" ? "Yes" : "No"}
+      ${isVoucherValid ? `🎟 *Voucher:* ${voucherCheck.type.toUpperCase()} (${voucherCheck.code})` : ""}
+`      ;
         sendTelegramMessage(message).catch(console.error);
       }
     } catch (err) {
-      newErrors.global = "Terjadi kesalahan tidak terduga.";
+      newErrors.global = "Unexpected error occurred.";
       setErrors(newErrors);
     } finally {
       setLoading(false);
@@ -256,12 +256,12 @@ export default function FormPage() {
         onSubmit={handleSubmit}
       >
         <h2 className="text-lg font-semibold text-gray-900">
-          Formulir Peminjaman Motor PPTI 21
+          Motorcycle Borrowing Form PPTI 21
         </h2>
 
         <div className="mt-6 relative">
           <label className="block text-sm font-medium text-gray-900">
-            Nama Peminjam
+            Borrower Name
           </label>
           <input
             id="nama"
@@ -270,7 +270,7 @@ export default function FormPage() {
             value={selectedName}
             onChange={handleNameChange}
             autoComplete="off"
-            placeholder="Ketik nama..."
+            placeholder="Type your name…"
             className={`mt-2 block w-full rounded-md border px-3 py-2 sm:text-sm ${
               errors.nama ? "border-red-500" : "border-gray-300"
             }`}
@@ -294,7 +294,7 @@ export default function FormPage() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Kelas</label>
+          <label className="block text-sm font-medium text-gray-900">Class</label>
           <input
             id="kelas"
             name="kelas"
@@ -307,7 +307,7 @@ export default function FormPage() {
 
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
-            Hari Peminjaman
+            Borrowing Date
           </label>
           <input
             id="hari"
@@ -323,7 +323,7 @@ export default function FormPage() {
                 e.target.value = ""; 
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Tidak bisa meminjam motor di tanggal 28, 29, 30.",
+                  hari: "Borrowing is not allowed on the 28th, 29th, and 30th."
                 }));
               } else {
                 setErrors((prev) => {
@@ -344,7 +344,7 @@ export default function FormPage() {
 
         <div className="mt-6">
           <div>
-            <label className="block text-sm font-medium text-gray-900">Jam Mulai</label>
+            <label className="block text-sm font-medium text-gray-900">Start Time</label>
             <input
               id="jamMulai"
               name="jamMulai"
@@ -357,7 +357,7 @@ export default function FormPage() {
 
         <div className="mt-6">
          <div>
-            <label className="block text-sm font-medium text-gray-900">Jam Selesai</label>
+            <label className="block text-sm font-medium text-gray-900">End Time</label>
             <input
               id="jamSelesai"
               name="jamSelesai"
@@ -370,13 +370,13 @@ export default function FormPage() {
 
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-900">
-            Alasan
+            Reason
           </label>
           <textarea
             id="alasan"
             name="alasan"
             rows="3"
-            placeholder="Tulis alasan atau pilih voucher di bawah ini"
+            placeholder="Write the reason"
             className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
           ></textarea>
         </div>
@@ -395,7 +395,7 @@ export default function FormPage() {
               }}
               className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
             >
-              <option value="">Pilih voucher yang tersedia</option>
+              <option value="">Select Vouchers</option>
               {voucherList.map((v, i) => (
                 <option key={i} value={v.code}>
                   {v.type} - {v.code}
@@ -404,7 +404,7 @@ export default function FormPage() {
             </select>
           ) : (
             <p className="text-gray-400 text-sm mt-2">
-              Tidak ada voucher yang aktif saat ini.
+              No active vouchers available at the moment.
             </p>
           )}
 
@@ -428,15 +428,15 @@ export default function FormPage() {
         </div>
 
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-900">Butuh STNK</label>
+          <label className="block text-sm font-medium text-gray-900">STNK</label>
           <select
             id="stnk"
             name="stnk"
             className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
           >
-            <option value="">Pilih</option>
-            <option value="ya">Ya</option>
-            <option value="tidak">Tidak</option>
+            <option value="">Select</option>
+            <option value="ya">Yes</option>
+            <option value="tidak">No</option>
           </select>
         </div>
 
@@ -446,7 +446,7 @@ export default function FormPage() {
             onClick={() => navigate("/")}
             className="text-sm font-semibold text-gray-900"
           >
-            Batal
+            Cancel
           </button>
           <button
             type="submit"
@@ -455,7 +455,7 @@ export default function FormPage() {
               loading ? "bg-gray-400" : "bg-indigo-600 hover:bg-indigo-500"
             }`}
           >
-            {loading ? "Menyimpan..." : "Simpan"}
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </form>

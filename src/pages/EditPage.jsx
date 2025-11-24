@@ -33,10 +33,10 @@ export default function LoginPage() {
 
         {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">NIM</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
         <input
           type="text"
-          placeholder="Masukkan NIM"
+          placeholder="Enter Student ID Number"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           className="w-full border px-3 py-2 rounded mb-4"
@@ -46,7 +46,7 @@ export default function LoginPage() {
           type="submit"
           className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-500"
         >
-          Masuk
+          Login
         </button>
       </form>
     </div>

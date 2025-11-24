@@ -21,11 +21,11 @@ export default function ModalBerhasil({ isOpen, onClose }) {
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-center">
                   <img src="/catat.png" alt="Logo" className="mx-auto h-40 w-auto" />
                   <DialogTitle as="h3" className="text-base justify-center font-semibold text-gray-900">
-                    Yey Berhasil
+                    Submitted successfully!
                   </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      Data Peminjaman kamu udah zims catat ya. Terima kasih sudah mengisi
+                      Your borrowing data has been recorded. Thanks for submitting!
                     </p>
                   </div>
                 </div>
@@ -40,7 +40,7 @@ export default function ModalBerhasil({ isOpen, onClose }) {
                 }}
                 className="inline-flex w-full justify-center rounded-md bg-[#6077ba] px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto"
               >
-                Lanjut
+                Next
               </button>
             </div>
           </DialogPanel>

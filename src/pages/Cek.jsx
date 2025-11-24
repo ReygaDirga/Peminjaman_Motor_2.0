@@ -29,7 +29,7 @@ export default function CekPage() {
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
           <label htmlFor="tanggal" className="font-medium whitespace-nowrap">
-            Pilih tanggal
+            Select Date
           </label>
 
           <input
@@ -45,9 +45,13 @@ export default function CekPage() {
       <div className="max-w-3xl mx-auto">
         {borrowData.length === 0 ? (
           <p className="text-center text-gray-500">
-            Belum ada peminjaman di tanggal{" "}
+            No bookings found for{" "}
             <span className="font-semibold">
-              {new Date(selectedDate).toLocaleDateString("id-ID")}
+              {new Date(selectedDate).toLocaleDateString("en-US", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </span>
             .
           </p>
@@ -55,10 +59,10 @@ export default function CekPage() {
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-100">
-                <th className="border p-2">Mulai</th>
-                <th className="border p-2">Selesai</th>
-                <th className="border p-2">Nama</th>
-                <th className="border p-2">Kelas</th>
+                <th className="border p-2">Start</th>
+                <th className="border p-2">End</th>
+                <th className="border p-2">Name</th>
+                <th className="border p-2">Class</th>
               </tr>
             </thead>
             <tbody>

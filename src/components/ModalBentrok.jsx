@@ -25,7 +25,7 @@ export default function ModalBentrok({ isOpen, onClose, conflictInfo }) {
                   </DialogTitle>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      Zims liat jadwal peminjaman kamu <b>bentrok</b> sama peminjaman lain nih
+                      Your booking schedule conflicts with another reservation.
                     </p>
                     {conflictInfo && (
                       <p className="mt-2 text-sm text-red-600 font-medium">
@@ -42,7 +42,7 @@ export default function ModalBentrok({ isOpen, onClose, conflictInfo }) {
                 onClick={onClose}
                 className="inline-flex w-full justify-center rounded-md bg-[#6077ba] px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto"
               >
-                Ganti Jadwal
+                Reschedule
               </button>
               <button
                 type="button"
@@ -52,7 +52,7 @@ export default function ModalBentrok({ isOpen, onClose, conflictInfo }) {
                 }}
                 className="inline-flex w-full justify-center rounded-md bg-gray-300 px-3 py-2 text-sm font-semibold text-gray-800 shadow-xs sm:ml-3 sm:w-auto"
               >
-                Cek Jadwal
+                Check Availability
               </button>
             </div>
           </DialogPanel>
