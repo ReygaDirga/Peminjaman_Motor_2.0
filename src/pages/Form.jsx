@@ -313,23 +313,28 @@ export default function FormPage() {
             id="hari"
             name="hari"
             type="date"
+            min={new Date().toISOString().split("T")[0]}
+            max={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split("T")[0]}
             onChange={(e) => {
               const value = e.target.value;
               const date = new Date(value);
               const day = date.getDate();
+
               const blockedDays = [];
 
               if (blockedDays.includes(day)) {
-                e.target.value = ""; 
+                e.target.value = "";
                 setErrors((prev) => ({
                   ...prev,
-                  hari: "Borrowing is not allowed on the 28th, 29th, and 30th."
+                  hari: "Borrowing is not allowed on the 28th, 29th, and 30th.",
                 }));
               } else {
                 setErrors((prev) => {
-                  const newErrors = { ...prev };
-                  delete newErrors.hari;
-                  return newErrors;
+                  const n = { ...prev };
+                  delete n.hari;
+                  return n;
                 });
               }
             }}
