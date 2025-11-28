@@ -37,7 +37,7 @@ export default function PeraturanPage() {
           </li>
           <li>
             Using the motorcycle longer than the allowed time is{" "}
-            <b>NOT PERMITTED</b>
+            <b>NOT PERMITTED</b>, unless prior approval has been granted by the Komti.
           </li>
           <li>All rental funds will go to the class treasury.</li>
           <li>Fuel is the responsibility of the borrower.</li>
