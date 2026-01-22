@@ -9,13 +9,13 @@ export default function PeraturanPage() {
   };
 
   return (
-    <div className="flex items-center justify-center px-6 pt-15">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-10">
+    <div className="min-h-screen flex items-center justify-center px-6 pt-15 bg-[#1f2229]">
+      <div className="bg-[#1f2229] text-white rounded-lg shadow-xl max-w-4xl w-full p-10">
         <h1 className="text-2xl font-bold text-center mb-8">
           📌 Borrowing Rules PPTI 21
         </h1>
 
-        <ol className="list-decimal list-inside space-y-3 text-gray-700 mb-8 text-base leading-relaxed">
+        <ol className="list-decimal list-inside space-y-3 text-white mb-8 text-base leading-relaxed">
           <li>Motorcycles are provided to support <b>PPTI 21</b> activities.</li>
           <li>Outside PPTI 21, borrowing is subject to a rental system.</li>
           <li>
@@ -47,13 +47,13 @@ export default function PeraturanPage() {
         <div className="flex justify-center gap-4">
           <button
             onClick={() => navigate("/")}
-            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+            className="px-4 py-2 bg-[#01eeff]/50 rounded hover:bg-[#01eeff]/30 transition"
           >
             Check Availability
           </button>
           <button
             onClick={handleAgree}
-            className="px-4 py-2 bg-[#6077ba] text-white rounded hover:bg-indigo-500 transition"
+            className="px-4 py-2 bg-[#01eeff] text-[#1f2229] rounded hover:bg-[#01eeff]/60 transition"
           >
             I Agree
           </button>

@@ -16,29 +16,29 @@ export default function ModalBerhasil({ isOpen, onClose }) {
             transition
             className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
           >
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="bg-[#1f2229] px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-center">
                   <img src="/catat.png" alt="Logo" className="mx-auto h-40 w-auto" />
-                  <DialogTitle as="h3" className="text-base justify-center font-semibold text-gray-900">
+                  <DialogTitle as="h3" className="text-base justify-center font-semibold text-emerald-500">
                     Submitted successfully!
                   </DialogTitle>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-white">
                       Your borrowing data has been recorded. Thanks for submitting!
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-            <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <div className="bg-[#1f2229] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
               <button
                 type="button"
                 onClick={() => {
                   onClose();
                   window.location.href = '/';
                 }}
-                className="inline-flex w-full justify-center rounded-md bg-[#6077ba] px-3 py-2 text-sm font-semibold text-white shadow-xs sm:ml-3 sm:w-auto"
+                className="inline-flex w-full justify-center rounded-md bg-[#01eeff] px-3 py-2 text-sm font-semibold text-[#1f2229] shadow-xs sm:ml-3 sm:w-auto"
               >
                 Next
               </button>

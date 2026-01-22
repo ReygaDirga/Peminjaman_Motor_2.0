@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <Disclosure
       as="nav"
-      className="fixed top-0 left-0 right-0 z-50 bg-[#2b3a67] shadow-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10"
+      className="fixed top-0 left-0 right-0 z-50 bg-[#1f2229] shadow-md after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-white/10"
     >
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center justify-between">
@@ -31,7 +31,7 @@ export default function Navbar() {
               <XMarkIcon aria-hidden="true" className="hidden size-6 group-data-open:block" />
             </DisclosureButton>
           </div>
-
+          
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center">
               <img src="/logo.png" alt="Logo" className="h-10 w-auto" />
@@ -45,7 +45,7 @@ export default function Navbar() {
                     to={item.href}
                     className={classNames(
                       location.pathname === item.href
-                        ? 'bg-[#6077ba] text-white'
+                        ? 'bg-[#70F2FF] text-[#1f2229]'
                         : 'text-gray-300 hover:bg-white/5 hover:text-white',
                       'rounded-md px-3 py-2 text-sm font-medium'
                     )}
@@ -69,7 +69,7 @@ export default function Navbar() {
               onClick={() => close()}
               className={classNames(
                 location.pathname === item.href
-                  ? 'bg-[#6077ba] text-white'
+                  ? 'bg-[#70F2FF] text-[#1f2229]'
                   : 'text-gray-300 hover:bg-white/5 hover:text-white',
                 'block rounded-md px-3 py-2 text-base font-medium'
               )}

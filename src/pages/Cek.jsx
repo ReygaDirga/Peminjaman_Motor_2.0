@@ -1,43 +1,50 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import CustomDatePicker from "../components/CustomDatePicker";
 
 export default function CekPage() {
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toLocaleDateString("en-CA")
-  );
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [borrowData, setBorrowData] = useState([]);
-  const fetchBorrowData = async (date) => {
-    const { data, error } = await supabase
-      .from("borrow_request")
-      .select(`*, users(name, class)`)
-      .eq("borrow_date", date)
-      .order("start_time", { ascending: true });
-
-    if (error) {
-      console.error("Error fetch:", error);
-    } else {
-      setBorrowData(data);
-    }
+  const formatDate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
   };
+
+  const fetchBorrowData = async (dateObj) => {
+  const dateStr = formatDate(dateObj);
+
+  const { data, error } = await supabase
+    .from("borrow_request")
+    .select(`*, users(name, class)`)
+    .eq("borrow_date", dateStr)
+    .order("start_time", { ascending: true });
+
+  if (error) {
+    console.error("Error fetch:", error);
+  } else {
+    setBorrowData(data);
+  }
+};
 
   useEffect(() => {
     fetchBorrowData(selectedDate);
   }, [selectedDate]);
 
   return (
-    <div className="min-h-screen bg-white py-4 pt-25">
+    <div className="min-h-screen bg-[#1f2229] text-white py-4 pt-25">
       <div className="flex justify-center mb-6">
         <div className="flex items-center gap-2">
           <label htmlFor="tanggal" className="font-medium whitespace-nowrap">
             Select Date
           </label>
 
-          <input
-            type="date"
-            id="tanggal"
+          <CustomDatePicker
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(date) => setSelectedDate(date)}
           />
         </div>
       </div>
@@ -58,11 +65,11 @@ export default function CekPage() {
         ) : (
           <table className="w-full border-collapse border border-gray-300">
             <thead>
-              <tr className="bg-gray-100">
+              <tr className="bg-[#1f2229]">
                 <th className="border p-2">Start</th>
                 <th className="border p-2">End</th>
                 <th className="border p-2">Name</th>
-                <th className="border p-2">Class</th>
+                <th className="border p-2">Class / Reason</th>
               </tr>
             </thead>
             <tbody>
@@ -72,7 +79,7 @@ export default function CekPage() {
                   <td className="border p-2">{row.end_time}</td>
                   <td className="border p-2">{row.users?.name}</td>
                   <td className="border p-2">
-                    {row.users?.class}
+                    {row.users?.name == "Admin" ? row.reason : row.users?.class}
                   </td>
                 </tr>
               ))}

@@ -1,1 +1,112 @@
 @import "tailwindcss";
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+.dark-datepicker {
+  background-color: #1f2229 !important;
+  border: 1px solid #374151 !important;
+  color: #1f2229 !important;
+}
+
+.dark-datepicker .react-datepicker__header {
+  background-color: #1f2229 !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark-datepicker .react-datepicker__current-month,
+.dark-datepicker .react-datepicker__day-name,
+.dark-datepicker .react-datepicker__day {
+  color: white !important;
+}
+
+.dark-datepicker .react-datepicker__day:hover {
+  background-color: #1f2937 !important;
+}
+
+.dark-datepicker .react-datepicker__day--selected,
+.dark-datepicker .react-datepicker__day--keyboard-selected {
+  background-color: #09757d !important;
+  color: white !important;
+}
+
+.dark-datepicker .react-datepicker__day--outside-month {
+  color: #6b7280 !important;
+}
+
+.dark-datepicker-popper {
+  z-index: 50 !important;
+}
+
+.dark-datepicker .react-datepicker__triangle {
+  fill: #1f2229 !important;
+  color: #1f2229 !important;
+}
+
+.react-datepicker-wrapper {
+  width: 100% !important;
+  display: block !important;
+}
+
+.react-datepicker__input-container {
+  width: 100% !important;
+}
+
+.react-datepicker__input-container input {
+  width: 100% !important;
+}
+
+/* === TIME PICKER DARK MODE === */
+
+.dark-datepicker .react-datepicker__time-container {
+  background-color: #1f2229 !important;
+  border-left: 1px solid #374151 !important;
+}
+
+.dark-datepicker .react-datepicker__time {
+  background-color: #1f2229 !important;
+}
+
+.dark-datepicker .react-datepicker__time-box {
+  background-color: #1f2229 !important;
+}
+
+.dark-datepicker .react-datepicker__time-list {
+  background-color: #1f2229 !important;
+}
+
+.dark-datepicker .react-datepicker__time-list-item {
+  color: white !important;
+}
+
+.dark-datepicker .react-datepicker__time-list-item:hover {
+  background-color: #1f2937 !important;
+}
+
+.dark-datepicker .react-datepicker__time-list-item--selected {
+  background-color: #01eeff !important;
+  color: white !important;
+}
+
+/* scrollbar (opsional tapi cakep) */
+.dark-datepicker .react-datepicker__time-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dark-datepicker .react-datepicker__time-list::-webkit-scrollbar-thumb {
+  background-color: #374151;
+  border-radius: 4px;
+}
+
+/* tanggal tidak valid (merah seperti KAI) */
+.datepicker-day-disabled-red {
+  color: #ef4444 !important;        /* merah */
+  background-color: transparent !important;
+  cursor: not-allowed !important;
+  text-decoration: line-through;
+}
+
+.datepicker-day-disabled-red:hover {
+  background-color: transparent !important;
+}
+

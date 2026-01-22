@@ -40,33 +40,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-96">
-        <h2 className="text-lg font-semibold mb-4 text-center">Admin Login</h2>
+    <div className="flex justify-center items-center bg-[#1f2229] min-h-screen">
+      <form onSubmit={handleLogin} className="bg-[#1f2229] p-6 rounded-lg shadow-md w-96">
+        <h2 className="text-lg font-semibold mb-4 text-center text-white">Admin Login</h2>
 
         {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <label className="block text-sm font-medium text-white mb-1">Name</label>
         <input
           type="text"
           placeholder="Enter your name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border px-3 py-2 rounded mb-4"
+          className="w-full border px-3 py-2 rounded mb-4 text-white bg-[#1f2229]"
         />
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Access Code</label>
+        <label className="block text-sm font-medium text-white mb-1">Access Code</label>
         <input
           type="text"
           placeholder="Enter the code"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="w-full border px-3 py-2 rounded mb-4"
+          className="w-full border px-3 py-2 rounded mb-4 text-white"
         />
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-500"
+          className="w-full bg-[#01eeff] text-[#1f2229] py-2 rounded hover:bg-[#01eeff]/60"
         >
           Login
         </button>

@@ -27,13 +27,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-96">
+    <div className="flex justify-center items-center min-h-screen bg-[#1f2229]">
+      <form onSubmit={handleLogin} className="bg-[#1f2229] text-white p-6 rounded-lg shadow-md w-96">
         <h2 className="text-lg font-semibold mb-4 text-center">Edit Data</h2>
 
         {error && <p className="text-red-500 text-sm mb-2 text-center">{error}</p>}
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+        <label className="block text-sm font-medium text-white mb-1">Student ID</label>
         <input
           type="text"
           placeholder="Enter Student ID Number"
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-500"
+          className="w-full bg-[#01eeff] text-[#1f2229] py-2 rounded hover:bg-[#01eeff]/60"
         >
           Login
         </button>

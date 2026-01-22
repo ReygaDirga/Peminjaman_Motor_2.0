@@ -1,10 +1,6 @@
 // src/pages/GenerateVoucherPage.jsx
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
-
-/* ----------------------------------------------------------
-   UI Component
----------------------------------------------------------- */
 function CodeBox({ code, onCopy, tone = "gold" }) {
   const toneStyle =
     tone === "gold"
@@ -24,13 +20,8 @@ function CodeBox({ code, onCopy, tone = "gold" }) {
   );
 }
 
-/* ----------------------------------------------------------
-   Helpers (RNG, generator, safe insert)
----------------------------------------------------------- */
-
-// RNG yang bener (hindarin Math.random kek jaman batu)
 const randomId = (len = 8) => {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const buf = new Uint8Array(len);
   crypto.getRandomValues(buf);
   return Array.from(buf, (v) => alphabet[v % alphabet.length]).join("");
@@ -38,7 +29,6 @@ const randomId = (len = 8) => {
 
 const genCode = (prefix, len = 8) => `${prefix}-${randomId(len)}`;
 
-// insert + retry kalau duplicate
 const insertVoucherWithRetry = async (table, prefix, len = 8, maxTry = 8) => {
   let lastErr = null;
 
@@ -51,24 +41,17 @@ const insertVoucherWithRetry = async (table, prefix, len = 8, maxTry = 8) => {
       .select()
       .single();
 
-    if (!error) return { code: data.code }; // sukses
+    if (!error) return { code: data.code };
 
-    // duplicate unique key
     if (error.code === "23505") {
       lastErr = error;
       continue;
     }
-
-    // error type yang bikin gagal total (kayak struktur tabel rusak)
     throw error;
   }
 
   throw lastErr || new Error("Gagal generate voucher setelah beberapa percobaan.");
 };
-
-/* ----------------------------------------------------------
-   Main Page
----------------------------------------------------------- */
 
 export default function GenerateVoucherPage() {
   const [loading, setLoading] = useState(null);
@@ -104,22 +87,21 @@ export default function GenerateVoucherPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center">
+    <div className="min-h-screen bg-[#1f2229] from-slate-50 to-slate-100 flex items-center">
       <div className="container mx-auto px-4">
         <div className="mx-auto w-full max-w-2xl">
 
           <div className="text-center mb-10">
-            <h1 className="text-2xl md:text-3xl font-semibold text-slate-800">
+            <h1 className="text-2xl md:text-3xl font-semibold text-white">
               🎟️ Generate Voucher
             </h1>
           </div>
 
-          <div className="bg-white/90 shadow rounded-2xl p-8 border border-slate-100">
+          <div className="bg-[#1f2229] shadow rounded-2xl p-8 border border-[#01eeff]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              {/* Aurum */}
               <section className="flex flex-col gap-3">
-                <h2 className="text-lg font-medium text-slate-800 flex items-center gap-2">
+                <h2 className="text-lg font-medium text-white flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 ring-2 ring-yellow-200"></span>
                   Aurum Access
                   <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
@@ -142,12 +124,11 @@ export default function GenerateVoucherPage() {
                 {aurCode && <CodeBox code={aurCode} onCopy={() => copy(aurCode)} />}
               </section>
 
-              {/* Platina */}
               <section className="flex flex-col gap-3">
-                <h2 className="text-lg font-medium text-slate-800 flex items-center gap-2">
+                <h2 className="text-lg font-medium text-white flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-400 ring-2 ring-slate-200"></span>
                   Platina Access
-                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                  <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-slate-300 text-slate-700">
                     Full Day
                   </span>
                 </h2>
@@ -155,7 +136,7 @@ export default function GenerateVoucherPage() {
                 <button
                   onClick={handleGeneratePlatina}
                   disabled={loading === "plt"}
-                  className={`w-full py-3 rounded-xl text-white font-medium transition
+                  className={`w-full py-3 rounded-xl text-slate-900 font-medium transition
                     ${loading === "plt"
                       ? "bg-slate-300 cursor-not-allowed"
                       : "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600"}
