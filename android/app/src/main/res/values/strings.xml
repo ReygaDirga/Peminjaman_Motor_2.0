@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Peminjaman Motor</string>
+    <string name="title_activity_main">Peminjaman Motor</string>
+    <string name="package_name">com.ti21.peminjamanmotor</string>
+    <string name="custom_url_scheme">com.ti21.peminjamanmotor</string>
+</resources>

@@ -1,0 +1,9 @@
+{
+  "appId": "com.ti21.peminjamanmotor",
+  "appName": "Peminjaman Motor",
+  "webDir": "dist",
+  "server": {
+    "url": "https://www.pinjammotor.site/",
+    "cleartext": false
+  }
+}

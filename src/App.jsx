@@ -1,18 +1,38 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { StatusBar } from '@capacitor/status-bar'
+import { Capacitor } from '@capacitor/core'
+
 import Navbar from './components/Navbar'
 import CekPage from './pages/Cek'
-import LoginPage from "./pages/LoginPage";
-import EditPage from "./pages/EditPage";
-import ProtectedGeneratePage from "./pages/ProtectedGeneratePage";
-import RudTable from "./pages/rud";
+import LoginPage from './pages/LoginPage'
+import EditPage from './pages/EditPage'
+import ProtectedGeneratePage from './pages/ProtectedGeneratePage'
+import RudTable from './pages/rud'
 import FormPage from './pages/Form'
 import PeraturanPage from './pages/Peraturan'
 
+import './index.css'
+
 export default function App() {
+  useEffect(() => {
+    if (Capacitor.getPlatform() === 'android') {
+      StatusBar.setOverlaysWebView({ overlay: false })
+
+      StatusBar.setBackgroundColor({
+        color: '#020617' // slate-900
+      })
+
+      StatusBar.setStyle({
+        style: 'DARK'
+      })
+    }
+  }, [])
+
   return (
     <Router>
-      <Navbar />
-      <div>
+      <div className="min-h-screen bg-slate-900 text-white">
+        <Navbar />
         <Routes>
           <Route path="/" element={<CekPage />} />
           <Route path="/form" element={<FormPage />} />

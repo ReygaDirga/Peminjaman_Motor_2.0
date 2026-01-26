@@ -1,4 +1,14 @@
 @import "tailwindcss";
+:root {
+  --status-bar-height: 24px;
+}
+
+.safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+
 .date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }

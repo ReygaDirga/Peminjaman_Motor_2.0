@@ -63,22 +63,22 @@ export default function CekPage() {
             .
           </p>
         ) : (
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="w-full table-fixed border-collapse border border-gray-300 text-sm">
             <thead>
               <tr className="bg-[#1f2229]">
-                <th className="border p-2">Start</th>
-                <th className="border p-2">End</th>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Class / Reason</th>
+                <th className="border p-2 w-[40px]">Start</th>
+                <th className="border p-2 w-[40px]">End</th>
+                <th className="border p-2 w-[90px]">Name</th>
+                <th className="border p-2 w-[50px]">Class / Reason</th>
               </tr>
             </thead>
             <tbody>
               {borrowData.map((row) => (
                 <tr key={row.id}>
-                  <td className="border p-2">{row.start_time}</td>
-                  <td className="border p-2">{row.end_time}</td>
-                  <td className="border p-2">{row.users?.name}</td>
-                  <td className="border p-2">
+                  <td className="border p-2 w-[50px]">{row.start_time}</td>
+                  <td className="border p-2 w-[50px]">{row.end_time}</td>
+                  <td className="border p-2 w-[100px]">{row.users?.name}</td>
+                  <td className="border p-2 w-[50px]">
                     {row.users?.name == "Admin" ? row.reason : row.users?.class}
                   </td>
                 </tr>
