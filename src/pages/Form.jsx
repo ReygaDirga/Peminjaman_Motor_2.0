@@ -328,13 +328,13 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
               onChange={(date) => {
                 setSelectedDate(date);
                 const day = date.getDate();
-                const blockedDays = [];
+                const blockedDays = [20,21,22];
 
                 if (blockedDays.includes(day)) {
                   setSelectedDate(null);
                   setErrors((prev) => ({
                     ...prev,
-                    hari: "Tanggal ini tidak tersedia",
+                    hari: "Motor akan di service",
                   }));
                 } else {
                   setSelectedDate(date);
