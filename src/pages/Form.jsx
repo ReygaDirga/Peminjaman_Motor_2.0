@@ -301,7 +301,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
               </ul>
             )}
             {errors.nama && (
-              <p className="mt-1 text-sm text-red-600">{errors.nama}</p>
+              <p className="mt-1 text-sm text-[#F87171]">{errors.nama}</p>
             )}
           </div>
 
@@ -349,7 +349,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
 
           </div>
             {errors.hari && (
-              <p className="mt-1 text-sm text-red-600">{errors.hari}</p>
+              <p className="mt-1 text-sm text-[#F87171]">{errors.hari}</p>
             )}
           </div>
 
@@ -367,7 +367,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
               />
 
             </div>
-            {errors.jamMulai && <p className="mt-1 text-sm text-red-600">{errors.jamMulai}</p>}
+            {errors.jamMulai && <p className="mt-1 text-sm text-[#F87171]">{errors.jamMulai}</p>}
           </div>
 
           <div className="mt-6">
@@ -382,7 +382,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
                   ${errors.jamSelesai ? "border-red-500" : "border-gray-300"}`}
               />
             </div>
-            {errors.jamSelesai && <p className="mt-1 text-sm text-red-600">{errors.jamSelesai}</p>}
+            {errors.jamSelesai && <p className="mt-1 text-sm text-[#F87171]">{errors.jamSelesai}</p>}
           </div>
 
           <div className="mt-6">
@@ -396,7 +396,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
               placeholder="Write the reason"
               className="mt-2 block w-full rounded-md border border-gray-300 px-3 py-2 sm:text-sm"
             ></textarea>
-            {errors.alasan && <p className="mt-1 text-sm text-red-600">{errors.alasan}</p>}
+            {errors.alasan && <p className="mt-1 text-sm text-[#F87171]">{errors.alasan}</p>}
           </div>
 
           <div className="mt-6">
@@ -456,7 +456,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
               <option value="ya">Yes</option>
               <option value="tidak">No</option>
             </select>
-            {errors.stnk && <p className="mt-1 text-sm text-red-600">{errors.stnk}</p>}
+            {errors.stnk && <p className="mt-1 text-sm text-[#F87171]">{errors.stnk}</p>}
           </div>
 
           <div className="mt-8 flex items-center justify-end gap-x-4">
