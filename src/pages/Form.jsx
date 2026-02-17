@@ -185,6 +185,12 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
 
         const sNew = new Date(`1970-01-01T${jamMulai}`);
         const eNew = new Date(`1970-01-01T${finalEndTime}`);
+        if(eNew <= sNew) {
+          newErrors.jamSelesai = "usage time exceeds the limit";
+          setErrors(newErrors);
+          setLoading(false);
+          return;
+        }
         const durationNew = (eNew - sNew) / (1000 * 60 * 60);
 
         if (!isAdmin && totalHours + durationNew > 4 && !isVoucherValid) {
