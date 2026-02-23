@@ -11,6 +11,7 @@ import ProtectedGeneratePage from './pages/ProtectedGeneratePage'
 import RudTable from './pages/rud'
 import FormPage from './pages/Form'
 import PeraturanPage from './pages/Peraturan'
+import Leaderboard from './pages/leaderboard'
 
 import './index.css'
 
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/edit" element={<EditPage />} />
           <Route path="/generate" element={<ProtectedGeneratePage />} />
           <Route path="/rud" element={<RudTable />} />
+          <Route path="/Leaderboard" element={<Leaderboard />} />
         </Routes>
       </div>
     </Router>
