@@ -1,0 +1,132 @@
+$pin-size: 5vmin;
+
+$main-wrapper-font-size: 15vmin;
+$main-wrapper-background-color: #1f2229;
+
+$signboard-wrapper-width: 75vmin;
+$signboard-wrapper-height: 55vmin;
+$signboard-margin: 20px;
+$signboard-wrapper-transform-origin: center #{$pin-size / 2};
+$signboard-wrapper-init-time: 1000ms;
+$signboard-wrapper-init-sign-move-time: 1000ms;
+$signboard-wrapper-sign-move-time: 3000ms;
+$signboard-wrapper-sign-move-delay-time: $signboard-wrapper-init-time + $signboard-wrapper-init-sign-move-time;
+$signboard-wrapper-rotation-degree: 3deg;
+$signboard-wrapper-border-radius: 4vmin;
+
+$signboard-color: #0D1117;
+$signboard-background-color: #70F2FF;
+$signboard-height: 35vmin;
+$signboard-text-shadow-color: darken($signboard-background-color, 20%);
+$signboard-box-shadow: 0 2vmin 4vmin 1vmin rgba(112, 242, 255, 0.25);
+
+$string-width: 30vmin;
+$string-height: 30vmin;
+$string-border-width: 0.9vmin;
+$string-border-color: #2C7A86;
+
+$pin-width: $pin-size;
+$pin-height: $pin-size;
+$pin-pin1-background-color: #9f9f9f;
+$pin-pin2-3-background-color: #2C7A86;
+$pin-pin2-3-x: 13vmin;
+$pin-pin2-3-y: 21.5vmin;
+
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,400i,700");
+
+.main-wrapper {
+  font-size: $main-wrapper-font-size;
+  background-color: $main-wrapper-background-color;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.signboard-wrapper {
+  width: $signboard-wrapper-width;
+  height: $signboard-wrapper-height;
+  margin: $signboard-margin;
+  position: relative;
+  flex-shrink: 0;
+  transform-origin: $signboard-wrapper-transform-origin;
+  animation:
+    $signboard-wrapper-init-time init forwards,
+    $signboard-wrapper-init-sign-move-time init-sign-move ease-out $signboard-wrapper-init-time,
+    $signboard-wrapper-sign-move-time sign-move $signboard-wrapper-sign-move-delay-time infinite;
+
+  .signboard {
+    color: $signboard-color;
+    font-family: "Open Sans", sans-serif;
+    font-weight: bold;
+    background-color: $signboard-background-color;
+    width: 100%;
+    height: $signboard-height;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    bottom: 0;
+    border-radius: $signboard-wrapper-border-radius;
+    text-shadow: 0 -0.015em $signboard-text-shadow-color;
+    box-shadow: $signboard-box-shadow;
+  }
+
+  .string {
+    width: $string-width;
+    height: $string-height;
+    border: solid $string-border-width $string-border-color;
+    border-bottom: none;
+    border-right: none;
+    position: absolute;
+    left: 50%;
+    transform-origin: top left;
+    transform: rotate(45deg);
+  }
+
+  .pin {
+    width: $pin-width;
+    height: $pin-height;
+    position: absolute;
+    border-radius: 50%;
+
+    &.pin1 {
+      background-color: $pin-pin1-background-color;
+      top: 0;
+      left: calc(50% - #{$pin-width / 2});
+    }
+
+    &.pin2,
+    &.pin3 {
+      background-color: $pin-pin2-3-background-color;
+      top: $pin-pin2-3-y;
+    }
+
+    &.pin2 {
+      left: $pin-pin2-3-x;
+    }
+
+    &.pin3 {
+      right: $pin-pin2-3-x;
+    }
+  }
+}
+
+@keyframes init {
+  0% { transform: scale(0); }
+  40% { transform: scale(1.1); }
+  60% { transform: scale(0.9); }
+  80% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes init-sign-move {
+  100% { transform: rotate($signboard-wrapper-rotation-degree); }
+}
+
+@keyframes sign-move {
+  0% { transform: rotate($signboard-wrapper-rotation-degree); }
+  50% { transform: rotate(-$signboard-wrapper-rotation-degree); }
+  100% { transform: rotate($signboard-wrapper-rotation-degree); }
+}
