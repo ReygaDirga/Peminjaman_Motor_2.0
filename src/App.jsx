@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/edit" element={<EditPage />} />
           <Route path="/generate" element={<ProtectedGeneratePage />} />
           <Route path="/rud" element={<RudTable />} />
-          <Route path="/Leaderboard" element={<Leaderboard />} />
+          {/* <Route path="/Leaderboard" element={<Leaderboard />} /> */}
         </Routes>
       </div>
     </Router>
