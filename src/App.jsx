@@ -1,50 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
-import { StatusBar } from '@capacitor/status-bar'
-import { Capacitor } from '@capacitor/core'
-
-import Navbar from './components/Navbar'
-import CekPage from './pages/Cek'
-import LoginPage from './pages/LoginPage'
-import EditPage from './pages/EditPage'
-import ProtectedGeneratePage from './pages/ProtectedGeneratePage'
-import RudTable from './pages/rud'
-import FormPage from './pages/Form'
-import PeraturanPage from './pages/Peraturan'
-import Leaderboard from './pages/leaderboard'
-
-import './index.css'
+import "./App.scss";
 
 export default function App() {
-  useEffect(() => {
-    if (Capacitor.getPlatform() === 'android') {
-      StatusBar.setOverlaysWebView({ overlay: false })
-
-      StatusBar.setBackgroundColor({
-        color: '#020617' // slate-900
-      })
-
-      StatusBar.setStyle({
-        style: 'DARK'
-      })
-    }
-  }, [])
-
   return (
-    <Router>
-      <div className="min-h-screen bg-slate-900 text-white">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<CekPage />} />
-          <Route path="/form" element={<FormPage />} />
-          <Route path="/peraturan" element={<PeraturanPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/edit" element={<EditPage />} />
-          <Route path="/generate" element={<ProtectedGeneratePage />} />
-          <Route path="/rud" element={<RudTable />} />
-          {/* <Route path="/Leaderboard" element={<Leaderboard />} /> */}
-        </Routes>
+    <div className="main-wrapper">
+      <div className="signboard-wrapper">
+        <div className="signboard">CLOSED</div>
+        <div className="string"></div>
+        <div className="pin pin1"></div>
+        <div className="pin pin2"></div>
+        <div className="pin pin3"></div>
       </div>
-    </Router>
-  )
+    </div>
+  );
 }
