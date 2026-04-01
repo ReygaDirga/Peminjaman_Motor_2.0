@@ -28,7 +28,7 @@ const LeaderboardRow = ({ player }) => {
           <div className="grid grid-cols-2 text-xs text-gray-300 mt-1">
             <span>Total Peminjaman: {player.id}</span>
             <span className="text-right font-semibold">
-              Total Jam: {player.score}
+              Total Jam: {Math.trunc(player.score)}
             </span>
           </div>
         </div>
@@ -37,7 +37,7 @@ const LeaderboardRow = ({ player }) => {
         <RankBadge rank={player.rank} avatar={player.avatar} />
         <span>{player.name}</span>
         <span>{player.id}</span>
-        <span>{player.score}</span>
+        <span>{Math.trunc(player.score)}</span>
       </div>
 
     </div>
