@@ -7,7 +7,6 @@ const navigation = [
   { name: 'Borrowing Form', href: '/peraturan' },
   { name: 'Edit Data', href: '/edit' },
   { name: 'Generate Voucher', href: '/login' },
-  { name: 'Leaderboard', href: '/Leaderboard'}
 ]
 
 function classNames(...classes) {
