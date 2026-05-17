@@ -1,123 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
-
-const RankBadge = ({ rank, avatar }) => (
-  <div className="flex items-center gap-3">
-    <span className="text-white font-bold">#{rank}</span>
-    <img
-      src={avatar}
-      alt="avatar"
-      className="w-10 h-10 rounded-full object-cover border-2 border-[#70F2FF]"
-    />
-  </div>
-);
-
-const LeaderboardRow = ({ player }) => {
+export default function ComingSoonPage() {
   return (
-    <div className="border-t border-[#70F2FF] text-white p-4">
-
-      {/* MOBILE */}
-      <div className="flex gap-4 sm:hidden">
-        <RankBadge rank={player.rank} avatar={player.avatar} />
-
-        <div className="flex-1">
-          <div className="font-semibold text-sm">
-            {player.name}
-          </div>
-
-          <div className="grid grid-cols-2 text-xs text-gray-300 mt-1">
-            <span>Total Peminjaman: {player.id}</span>
-            <span className="text-right font-semibold">
-              Total Jam: {Math.trunc(player.score)}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="hidden sm:grid sm:grid-cols-4 items-center text-gray-300 text-sm md:text-base">
-        <RankBadge rank={player.rank} avatar={player.avatar} />
-        <span>{player.name}</span>
-        <span>{player.id}</span>
-        <span>{Math.trunc(player.score)}</span>
-      </div>
-
-    </div>
-  );
-};
-
-export default function Leaderboard() {
-
-  const [leaderboardData, setLeaderboardData] = useState([]);
-
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  async function fetchLeaderboard() {
-    const { data: leaderboard, error: lbError } = await supabase
-      .from("borrow_leaderboard")
-      .select("*")
-      .order("rank", { ascending: true });
-
-    if (lbError) {
-      console.error(lbError);
-      return;
-    }
-    const { data: users, error: userError } = await supabase
-      .from("users")
-      .select("name, photo_url");
-
-    if (userError) {
-      console.error(userError);
-      return;
-    }
-
-    const formatted = leaderboard.map((item) => {
-      const user = users.find(u => u.name === item.name);
-      let avatar = "";
-      if (user?.photo_url) {
-        const { data } = supabase
-          .storage
-          .from("avatars")
-          .getPublicUrl(user.photo_url);
-
-        avatar = data.publicUrl;
-      }
-
-      return {
-        rank: item.rank,
-        name: item.name,
-        id: item.total_peminjaman,
-        score: item.total_jam,
-        avatar: avatar
-      };
-    });
-
-    setLeaderboardData(formatted);
-  }
-
-  return (
-    <div className="min-h-screen w-full flex items-center bg-[#1f2229] justify-center p-4 md:p-10">
-      <div className="w-full max-w-4xl backdrop-blur-md rounded-xl border border-[#70F2FF] shadow-2xl overflow-hidden">
-
-        <div className="flex justify-center items-center gap-4 py-6 border-b border-[#70F2FF]">
-          <span className="text-yellow-400">🏆</span>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-300 tracking-widest">
-            LEADERBOARD
-          </h1>
-          <span className="text-yellow-400">🏆</span>
-        </div>
-
-        <div className="hidden sm:grid sm:grid-cols-4 px-6 py-3 text-gray-300 text-xs uppercase tracking-wider">
-          <span>Rank</span>
-          <span>Name</span>
-          <span>Total Peminjaman</span>
-          <span>Total Jam Pemakaian</span>
-        </div>
-
-        {leaderboardData.map((player) => (
-          <LeaderboardRow key={player.rank} player={player} />
-        ))}
-
+    <div className="min-h-screen bg-[#1f2229] text-white overflow-hidden relative flex items-center justify-center px-6">
+      <div className="relative z-10 max-w-3xl text-center">
+        <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-none mb-6">
+          <span className="text-white">COMING</span>{" "}
+          <span className="text-cyan-300">SOON</span>
+        </h1>
+        <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto mb-10">
+          We’re building something better for this website.
+          New features and a more modern experience are on
+          the way.
+        </p>
       </div>
     </div>
   );

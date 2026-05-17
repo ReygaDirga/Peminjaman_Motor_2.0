@@ -12,7 +12,7 @@ export default function PeraturanPage() {
     <div className="min-h-screen flex items-center justify-center px-6 pt-15 bg-[#1f2229]">
       <div className="bg-[#1f2229] text-white rounded-lg shadow-xl max-w-4xl w-full p-10">
         <h1 className="text-2xl font-bold text-center mb-8">
-          📌 Borrowing Rules PPTI 21
+          Borrowing Rules PPTI 21
         </h1>
 
         <ol className="list-decimal list-inside space-y-3 text-white mb-8 text-base leading-relaxed">
@@ -22,7 +22,7 @@ export default function PeraturanPage() {
             Usage time limits:
             <ul className="list-disc list-inside ml-5 mt-1 space-y-1">
               <li>
-                PPTI 21 → Free <b>4 hours per person per day</b>. More than that will be charged Rp15.000/hour.
+                PPTI 21 → Free <b>2 hours per person per day</b>. More than that will be charged Rp15.000/hour.
               </li>
               <li>
                 Non-PPTI 21 → Maximum <b>3 hours per person per day</b> (Rp7.000/hour).
@@ -35,13 +35,6 @@ export default function PeraturanPage() {
           <li>
             For non-PPTI 21 usage less than 1 hour or only for buying food, no rental fee will be charged.
           </li>
-          <li>
-            Using the motorcycle longer than the allowed time is{" "}
-            <b>NOT PERMITTED</b>, unless prior approval has been granted by the Komti.
-          </li>
-          <li>All rental funds will go to the class treasury.</li>
-          <li>Fuel is the responsibility of the borrower.</li>
-          <li>After returning the motorcycle, please leave the key in the motorcycle compartment. <b>DO NOT TAKE IT</b>, unless specifically requested by the owner.</li>
         </ol>
 
         <div className="flex justify-center gap-4">
