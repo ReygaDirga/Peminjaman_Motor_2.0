@@ -7,10 +7,6 @@ import { sendTelegramMessage } from "../lib/telegram";
 import CustomDatePicker from "../components/CustomDatePicker";
 import AnalogTimePicker from "../components/CustomeTimePicker";
 
-  const today = new Date();
-  const maxDate = new Date();
-  maxDate.setDate(today.getDate() + 14);
-
   const addHours = (timeStr, hours) => {
     const d = new Date(`1970-01-01T${timeStr}`);
     d.setHours(d.getHours() + hours);
@@ -193,8 +189,8 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
         }
         const durationNew = (eNew - sNew) / (1000 * 60 * 60);
 
-        if (!isAdmin && totalHours + durationNew > 4 && !isVoucherValid) {
-          newErrors.jamSelesai = `Total duration today ${totalHours + durationNew} hours (max 4 hours without a voucher)`;
+        if (!isAdmin && totalHours + durationNew > 2 && !isVoucherValid) {
+          newErrors.jamSelesai = `Total duration today ${totalHours + durationNew} hours (max 2 hours without a voucher)`;
           setErrors(newErrors);
           setLoading(false);
           return;
@@ -279,7 +275,7 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
 
           <div className="mt-6 relative">
             <label className="block text-sm font-medium text-white">
-              Borrower Name
+              Your Name
             </label>
             <input
               id="nama"
@@ -330,9 +326,11 @@ import AnalogTimePicker from "../components/CustomeTimePicker";
           <div className="mt-2 max-w-full">
             <CustomDatePicker
               value={selectedDate}
+              maxDays={7}
               error={errors.hari}
               onChange={(date) => {
                 setSelectedDate(date);
+
                 const day = date.getDate();
                 const blockedDays = [];
 
