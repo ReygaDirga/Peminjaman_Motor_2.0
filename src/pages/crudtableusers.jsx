@@ -96,9 +96,9 @@ export default function CekPage() {
     }
     totalMinutes += end - start;
 
-    if (totalMinutes > 4 * 60) {
+    if (totalMinutes > 2 * 60) {
       const totalHours = (totalMinutes / 60).toFixed(1);
-      return { ok: false, reason: `Kamu udah pinjam total ${totalHours} jam di hari itu (maks 4 jam).` };
+      return { ok: false, reason: `Kamu udah pinjam total ${totalHours} jam di hari itu (maks 2 jam).` };
     }
 
     return { ok: true };
